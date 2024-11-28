@@ -1,0 +1,172 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!--Css Style -->
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+  <!--Font Link-->
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+</head>
+
+<body id="bg" style="background-image: url({% static '/images/bg.jfif' %})">
+  {% load static %}
+
+  <!-- <nav class="navbar navbar-dark" style="background-color: #022b0c;  border-bottom: 7px solid #065c34;">
+    <div class="container position-relative">
+      <a class="navbar-brand" href="{% url 'home' %}">
+        <img src="{% static 'images/logo.svg' %}" alt="" style="width: 60px; height: auto;">Cavite State University
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDarkNavbar"
+        aria-controls="offcanvasDarkNavbar" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="offcanvas offcanvas-end"
+        style="background-color: #022b0c; color: #ffffff; border-right: 4px solid #065c34; border-bottom: 4px solid #065c34;"
+        tabindex="-1" id="offcanvasDarkNavbar" data-bs-backdrop="false" aria-labelledby="offcanvasDarkNavbarLabel">
+
+        <div class="offcanvas-header">
+          <img src="{% static 'images/logo.svg' %}" alt="" style="width: 60px; height: auto;">Cavite State University
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"
+            aria-label="Close"></button>
+        </div>
+
+        <div class="offcanvas-body">
+          <form class="search-form" role="search">
+            <div class="input-group">
+              <input class="form-control" type="search" placeholder="Search" aria-label="Search">
+              <button class="btn btn-success" type="submit">
+                <i class="fas fa-search"></i> Search</button>
+            </div>
+          </form>
+
+          <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'enroll' %}">Enroll</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'checklist' %}">Checklist</a>
+            </li>
+          </ul>
+
+          <form class="d-flex" id="authstyle">
+            {% if user.is_authenticated %}
+            <a href="{% url 'profile' %}" class="btn" style="color: white; background-color: #235a02;" type="submit"
+              id="header-links"> Profile </a>
+            <a href="{% url 'logout' %}" class="btn" style="color: white; background-color: #235a02;" type="submit"
+              id="header-links"> Logout </a>
+            {% else %}
+            <a href="{% url 'register' %}" class="btn" style="color: white; background-color: #235a02;" type="submit"
+              id="header-links"> Create Account </a>
+            <a href="{% url 'login' %}" class="btn" style="color: white; background-color: #235a02; margin-left: 10px; "
+              type="submit" id="header-links">Log
+              In</a>
+            {% endif %}
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </nav> -->
+
+
+  <nav class="navbar navbar-expand-lg"
+    style="background-color: #fafafa; font-size: 15px; font-weight: 0 !important; height: auto; border-bottom: 3px solid #0d722c ;">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{% url 'home' %}">
+        <img src="{% static 'images/logo.svg' %}" alt="" style="width: 60px; height: auto;">CvSU Bacoor
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div style="background-color:rgba(73, 71, 71, 0.1); padding-right: 5px; padding-left: 5px; border-radius: 50px; width: auto; height: auto;">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'enroll' %}">Enroll</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'checklist' %}">Checklist</a>
+            </li>
+            <li>
+              <form class="search-form" role="search">
+                <div class="input-group">
+                  <input class="form-control" type="search" placeholder="Search" aria-label="Search">
+                  <button class="btn btn-success" type="submit">
+                    <i class="fas fa-search"></i> Search</button>
+                </div>
+              </form>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="position: relative; float: right; margin-right: 20px;">
+        <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+          User
+        </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="#">Settings</a></li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+            <li><a class="dropdown-item" href="{% url 'login' %}">Logout</a></li>
+          </ul>
+        </li>
+      </div>
+    </div>
+  </nav>
+
+
+  <div>
+    <div class="container">
+      {% if messages %}
+      {% for message in messages %}
+      <div class="alert alert-{{message.tags}}">{{message}}</div>
+      {% endfor %}
+      {% endif %}
+    </div>
+    {% block content %}
+    {% endblock content %}
+  </div>
+
+  <!-- Optional JavaScript; choose one of the two! -->
+
+  <!-- Option 1: Bootstrap Bundle with Popper -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Option 2: Separate Popper and Bootstrap JS -->
+  <!--
+      <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js" integrity="sha384-SR1sx49pcuLnqZUnnPwx6FCym0wLsk5JZuNx2bPPENzswTNFaQU1RDvt3wT4gWFG" crossorigin="anonymous"></script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.min.js" integrity="sha384-j0CNLUeiqtyaRmlzUHCPZ+Gy5fQu0dQ6eZ/xAww941Ai1SxSY+0EQqNXNE6DZiVc" crossorigin="anonymous"></script>
+      -->
+</body>
+
+</html>

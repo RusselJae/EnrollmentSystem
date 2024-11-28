@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/main.css' %}">
+<div class="container" style="margin-top: 30px;" id="home-section">
+  <h1>Home</h1>
+  <div style="  background-color: rgba(0, 0, 0, 0.034);
+  padding: 20px; height: 450px !important; width: 1200px; margin: 0 auto; ;
+  border-radius: 10px; 
+  box-shadow: 5px 5px 10px rgba(0, 128, 0, 0.5);">
+    <div class="row align-items-center">
+      <!-- Image on the left -->
+      <div class="col-3 col-md-4" id="header-image">
+        <img src="{% static 'images/bg3.svg' %}" alt="Header Image" class="scaled-image">
+      </div>
+
+      <!-- Header text on the right -->
+      <div class="col-3 col-md-8" id="header-text">
+        <h2 id="header-h1">Cavite State University <br> Bacoor Campus.</h2>
+        <p id="header-paragraph">“The premier University in historic Cavite recognized for excellence in the <br> development of globally competitive and morally upright individuals”</p>
+        <a class="signin-btn" style="color: white; background-color: #09612d; width: 200px !important; float: right; 
+          border-radius: 20px;" type="submit">Discover More</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

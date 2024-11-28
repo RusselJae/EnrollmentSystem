@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container" style="margin-top: 30px;" id="checklist-section">
+    <h1>Checklist</h1>
+
+    <!-- <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Student Number</th>
+                <th scope="col">First Name</th>
+                <th scope="col">Middle Name</th>
+                <th scope="col">Last Name</th>
+                <th scope="col">Course</th>
+                <th scope="col">Year Level</th>
+                <th scope="col">Status</th>
+                <th scope="col">Enrollment Status</th>
+            </tr>
+        </thead>
+        <tbody class="table-group-divider">
+            {% for cs_students in cs_students %}
+            <tr>
+                <th scope="row">{{ cs_students.id }}</th>
+                <td>{{ cs_students.student_number }}</td>
+                <td>{{ cs_students.first_name }}</td>
+                <td>{{ cs_students.middle_name }}</td>
+                <td>{{ cs_students.last_name }}</td>
+                <td>{{ cs_students.course }}</td>
+                <td>{{ cs_students.year_level }}</td>
+                <td>{{ cs_students.status }}</td>
+                <td>{{ cs_students.enrollment_status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table> -->
+</div>
+
+{% endblock content %}
