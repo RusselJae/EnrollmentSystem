@@ -5,12 +5,12 @@
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1>Manage Students</h1>
+                <h1>Manage Not Enrolled Students</h1>
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
                     <li class="breadcrumb-item"><a href="{% url 'dashboard1' %}">Home</a></li>
-                    <li class="breadcrumb-item active">Manage Students</li>
+                    <li class="breadcrumb-item active">Not Enrolled Students</li>
                 </ol>
             </div>
         </div>
@@ -23,7 +23,7 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Student List</h3>
+                        <h3 class="card-title">Not Enrolled Students List</h3>
                     </div>
                     <div class="card-body">
                         {% if messages %}
@@ -79,31 +79,21 @@
                                     <td>{{ student.year_level }}</td>
                                     <td>{{ student.section }}</td>
                                     <td>
-                                        {% if student.date_enrolled and student.date_enrolled != 'None' %}
-                                        <span class="badge badge-success">
-                                            Enrolled on {{ student.date_enrolled }}
-                                        </span>
-                                    {% else %}
                                         <span class="badge badge-danger">Not Enrolled</span>
-                                    {% endif %}
                                     </td>
                                     <td>
                                         <div class="btn-group" role="group">
-                                            <a href="{% url 'update-students' student_number=student.student_number %}"
+                                            <a href="{% url 'enroll-students-sub' %}"
                                             class="btn btn-sm btn-success">
-                                            <i class="fas fa-edit"></i> Edit Information
+                                            Enroll
                                              </a>
-                                             <a href="{% url 'manage-students-sub' program=student.program student_number=student.student_number %}"
-                                             class="btn btn-sm btn-primary">
-                                              <i class="fas fa-book"></i> Edit Subjects
-                                          </a>
-                                            <form method="post" action="{% url 'delete_student' student.id %}"
+                                            <!-- <form method="post" action="{% url 'delete_student' student.id %}"
                                                 style="display:inline;" onsubmit="return confirmDelete();">
                                                 {% csrf_token %}
                                                 <button type="submit" class="btn btn-sm btn-danger">
                                                     <i class="fas fa-trash"></i> Remove
                                                 </button>
-                                            </form>
+                                            </form> -->
                                         </div>
                                     </td>
                                 </tr>

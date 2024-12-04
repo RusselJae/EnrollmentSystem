@@ -79,31 +79,27 @@
                                     <td>{{ student.year_level }}</td>
                                     <td>{{ student.section }}</td>
                                     <td>
-                                        {% if student.date_enrolled and student.date_enrolled != 'None' %}
                                         <span class="badge badge-success">
                                             Enrolled on {{ student.date_enrolled }}
                                         </span>
-                                    {% else %}
-                                        <span class="badge badge-danger">Not Enrolled</span>
-                                    {% endif %}
                                     </td>
                                     <td>
                                         <div class="btn-group" role="group">
-                                            <a href="{% url 'update-students' student_number=student.student_number %}"
+                                            <!-- <a href="{% url 'update-students' student_number=student.student_number %}"
                                             class="btn btn-sm btn-success">
                                             <i class="fas fa-edit"></i> Edit Information
-                                             </a>
+                                             </a> -->
                                              <a href="{% url 'manage-students-sub' program=student.program student_number=student.student_number %}"
                                              class="btn btn-sm btn-primary">
                                               <i class="fas fa-book"></i> Edit Subjects
                                           </a>
-                                            <form method="post" action="{% url 'delete_student' student.id %}"
+                                            <!-- <form method="post" action="{% url 'delete_student' student.id %}"
                                                 style="display:inline;" onsubmit="return confirmDelete();">
                                                 {% csrf_token %}
                                                 <button type="submit" class="btn btn-sm btn-danger">
                                                     <i class="fas fa-trash"></i> Remove
                                                 </button>
-                                            </form>
+                                            </form> -->
                                         </div>
                                     </td>
                                 </tr>

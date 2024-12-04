@@ -1,0 +1,297 @@
+{% extends 'base4.html' %}
+{% block content %}
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Student Enrollment</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">Enroll Students</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section id="inputSection" class="content">
+    <div class="container-fluid">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title" id="semesterTitle">Comprehensive Semester Input</h3>
+            </div>
+            <form role="form" id="enrollmentForm">
+                <div class="card-body">
+                    <div class="form-group row">
+                        <div class="col-sm-3">
+                            <label for="studentInput">Student Name/ID</label>
+                            <input type="text" class="form-control" id="studentInput"
+                                placeholder="Enter Student Name or ID" required>
+                        </div>
+                        <div class="col-sm-3">
+                            <label for="programSelect">Program</label>
+                            <select class="form-control" id="programSelect" name="program" required>
+                                <option value="">Select Program</option>
+                                <option value="BS Computer Science">BS Computer Science</option>
+                                <option value="BS Information Technology">BS Information Technology</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-3">
+                            <label for="yearLevelSelect">Select Year Level(Filter Subjects)</label>
+                            <select class="form-control" id="yearLevelSelect">
+                                <option value="">Select Year Level</option>
+                                <option value="1">1st Year</option>
+                                <option value="2">2nd Year</option>
+                                <option value="3">3rd Year</option>
+                                <option value="4">4th Year</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-3">
+                            <label for="semesterSelect">Select Semester(Filter Subjects)</label>
+                            <select class="form-control" id="semesterSelect">
+                                <option value="">Select Semester</option>
+                                <option value="1">1st Semester</option>
+                                <option value="2">2nd Semester</option>
+                                <option value="3">Mid Year</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Repeat this block for each subject -->
+                    {% for i in subject_range %}
+                    <div class="form-group row">
+                        <div class="col-sm-6">
+                            <label for="category{{ i }}">Subject {{ i }}</label>
+                            <select class="form-control subject-select" name="sub{{ i }}" id="category{{ i }}">
+                                <option value="">Select Subject</option>
+                                {% for subject in subjects %}
+                                <option value="{{ subject.sub_code }}" data-lec-units="{{ subject.lec_units }}"
+                                    data-lab-units="{{ subject.lab_units }}" data-year="{{ subject.year_level }}"
+                                    data-semester="{{ subject.semester }}" data-cs="{{ subject.cs }}"
+                                    data-it="{{ subject.it }}">
+                                    {{ subject.sub_code }}: {{ subject.sub_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-sm-3">
+                            <label for="lec{{ i }}">Lecture Units</label>
+                            <input type="number" class="form-control lecture-hours" id="lec{{ i }}"
+                                placeholder="Lec Hrs" readonly>
+                        </div>
+                        <div class="col-sm-3">
+                            <label for="lab{{ i }}">Lab Units</label>
+                            <input type="number" class="form-control lab-hours" id="lab{{ i }}" placeholder="Lab Hrs"
+                                readonly>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <div class="form-group row">
+                        <div class="col-sm-6">
+                            <label for=""></label>
+                        </div>
+                        <div class="col-sm-3">
+                            <label for="totalLecUnits">Total Lecture Units</label>
+                            <input type="text" class="form-control" id="totalLecUnits" readonly>
+                        </div>
+                        <div class="col-sm-3">
+                            <label for="totalLabUnits">Total Lab Units</label>
+                            <input type="text" class="form-control" id="totalLabUnits" readonly>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Total Units Display -->
+
+                
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">Submit Enrollment</button>
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'add-students' %}"
+                         class="btn btn-success"> Go Back
+                        </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const yearLevelSelect = document.getElementById('yearLevelSelect');
+    const semesterSelect = document.getElementById('semesterSelect');
+    const programSelect = document.getElementById('programSelect');
+    const subjectSelects = document.querySelectorAll('.subject-select');
+    const totalLecUnits = document.getElementById('totalLecUnits');
+    const totalLabUnits = document.getElementById('totalLabUnits');
+
+    function filterSubjects() {
+    const yearLevel = yearLevelSelect.value;
+    const semester = semesterSelect.value;
+    const program = programSelect.value;
+
+    subjectSelects.forEach(select => {
+        const options = select.options;
+        for (let i = 0; i < options.length; i++) {
+            const option = options[i];
+            
+            // Skip the first "Select Subject" option
+            if (!option.value) continue;
+
+            const year = option.getAttribute('data-year');
+            const sem = option.getAttribute('data-semester');
+            const isCS = option.getAttribute('data-cs');
+            const isIT = option.getAttribute('data-it');
+
+            // Year and semester filtering
+            const yearMatch = (year === yearLevel || yearLevel === "");
+            const semesterMatch = (sem === semester || semester === "");
+            
+            // Program-specific filtering
+            let programMatch = false;
+            if (program === "BS Computer Science") {
+                programMatch = (isCS === 'yes');
+            } else if (program === "BS Information Technology") {
+                programMatch = (isIT === 'yes');
+            } else {
+                // If no program is selected, show all subjects
+                programMatch = true;
+            }
+
+            // Show or hide the option based on ALL conditions
+            option.style.display = (yearMatch && semesterMatch && programMatch) ? "block" : "none";
+        }
+    });
+}
+
+    // Existing updateTotalUnits function
+    function updateTotalUnits() {
+        let totalLec = 0;
+        let totalLab = 0;
+
+        subjectSelects.forEach(select => {
+            const selectedOption = select.options[select.selectedIndex];
+            if (selectedOption.value) {
+                totalLec += parseInt(selectedOption.getAttribute('data-lec-units')) || 0;
+                totalLab += parseInt(selectedOption.getAttribute('data-lab-units')) || 0;
+            }
+        });
+
+        totalLecUnits.value = totalLec;
+        totalLabUnits.value = totalLab;
+    }
+
+    // Add event listeners
+    yearLevelSelect.addEventListener('change', filterSubjects);
+    semesterSelect.addEventListener('change', filterSubjects);
+    programSelect.addEventListener('change', filterSubjects);
+
+    // Existing subject select change event listeners
+    subjectSelects.forEach(select => {
+        select.addEventListener('change', function () {
+            const lectureInput = this.closest('.form-group.row').querySelector('.lecture-hours');
+            const labInput = this.closest('.form-group.row').querySelector('.lab-hours');
+            const selectedOption = this.options[this.selectedIndex];
+
+            if (selectedOption.value) {
+                lectureInput.value = selectedOption.getAttribute('data-lec-units');
+                labInput.value = selectedOption.getAttribute('data-lab-units');
+            } else {
+                lectureInput.value = '';
+                labInput.value = '';
+            }
+
+            updateTotalUnits();
+        });
+    });
+
+    // Initial filtering when the page loads
+    filterSubjects();
+
+
+
+    document.getElementById('enrollmentForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // Get student input details
+        const studentId = document.getElementById('studentInput').value;
+        const totalUnits = parseInt(totalLecUnits.value) + parseInt(totalLabUnits.value);
+
+        // Prepare subjects data
+        const subjects = [];
+        for (let i = 1; i <= 9; i++) {
+            const subjectSelect = document.getElementById(`category${i}`);
+            if (subjectSelect.value) {
+                subjects.push(subjectSelect.value);
+            }
+        }
+
+        // Determine the route based on the program
+        let enrollmentRoute = '';
+        const programSelect = document.getElementById('programSelect'); // Assuming you add this to the form
+        const program = programSelect ? programSelect.value : '';
+
+        // Prepare data for submission
+        const formData = {
+            student_number: studentId,
+            sub1: subjects[0] || '',
+            sub2: subjects[1] || '',
+            sub3: subjects[2] || '',
+            sub4: subjects[3] || '',
+            sub5: subjects[4] || '',
+            sub6: subjects[5] || '',
+            sub7: subjects[6] || '',
+            sub8: subjects[7] || '',
+            sub9: subjects[8] || '',
+            total_units: totalUnits
+        };
+
+        // Submit to appropriate endpoint based on program
+        fetch('/enroll_student/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken') // Ensure you have a function to get CSRF token
+            },
+            body: JSON.stringify({
+                program: program,
+                enrollment_data: formData
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Enrollment successful!');
+                // Optionally reset the form or redirect
+            } else {
+                alert('Enrollment failed: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred during enrollment.');
+        });
+    });
+
+    // Utility function to get CSRF token from cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %}

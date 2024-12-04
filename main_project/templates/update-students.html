@@ -108,9 +108,10 @@
                                         <option value="">Select Status</option>
                                         <option value="regular" {% if student.status == "regular" %}selected{% endif %}>Regular</option>
                                         <option value="irregular" {% if student.status == "irregular" %}selected{% endif %}>Irregular</option>
+                                        <option value="transferee" {% if student.status == "transferee" %}selected{% endif %}>Transferee</option>
                                     </select>
                                 </div>
-                                <div class="col-md-3 form-group">
+                                <div class="col-md-2 form-group">
                                     <label>Year Level</label>
                                     <select class="form-control" name="year_level" required>
                                         <option value="">Select Year Level</option>
@@ -119,16 +120,21 @@
                                         {% endfor %}
                                     </select>
                                 </div>
-                                <div class="col-md-3 form-group">
+                                <div class="col-md-2 form-group">
                                     <label>Section</label>
                                     <input class="form-control" name="section" type="text" value="{{ student.section }}" required>
                                 </div>
+                                <div class="col-md-2 form-group">
+                                    <label>Society Fee</label>
+                                    <select class="form-control" name="soc_fee" required>
+                                        <option value="">Select Fee Status</option>
+                                        <option value="paid" {% if student.soc_fee == "paid" %}selected{% endif %}>Paid</option>
+                                        <option value="not paid" {% if student.soc_fee == "not paid" %}selected{% endif %}>Not Paid</option>
+                                    </select>
+                                </div>
                                 <div class="col-md-3 form-group">
-                                    <label>Profile Image</label>
-                                    <input type="file" class="form-control" name="profile_image" accept="image/*">
-                                    {% if student.profile_image %}
-                                    <small>Current Image: <a href="{{ student.profile_image.url }}" target="_blank">View</a></small>
-                                    {% endif %}
+                                    <label>Date Enrolled</label>
+                                    <input type="text" class="form-control" id="date_enrolled" value="{% if student.date_enrolled %}{{ student.date_enrolled }}{% else %}Not Enrolled{% endif %}" readonly>
                                 </div>
                             </div>
                         </div>

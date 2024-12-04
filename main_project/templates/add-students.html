@@ -1,5 +1,17 @@
 {% extends 'base4.html' %}
 {% block content %}
+<style>
+.form-group .field-note {
+    color: #6c757d;
+    font-size: 0.8em;
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+.form-group .field-note.error {
+    color: #dc3545;
+}
+</style>
+
 <section class="content-header">
     <div class="container-fluid">
         <div class="row mb-2">
@@ -75,7 +87,48 @@
                             </div>
 
                             <div class="row">
+                                <div class="col-md-3 form-group">
+                                    <label>Status</label>
+                                    <select class="form-control" name="status" id="student-status" required>
+                                        <option value="">Select Status</option>
+                                        <option value="regular">Regular</option>
+                                        <option value="irregular">Irregular</option>
+                                        <option value="transferee">Transferee</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3 form-group">
+                                    <label>Year Level</label>
+                                    <select class="form-control" name="year_level" id="year-level" required>
+                                        <option value="">Select Year Level</option>
+                                        <option value="1">1st Year</option>
+                                        <option value="2">2nd Year</option>
+                                        <option value="3">3rd Year</option>
+                                        <option value="4">4th Year</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 form-group" id="section-container">
+                                    <label>Section</label>
+                                    <input class="form-control" name="section" type="text" id="section-input">
+                                    <div id="section-note" class="field-note"></div>
+                                </div>
+                                <div class="col-md-3 form-group" id="student-number-container">
+                                    <label>Student Number</label>
+                                    <input class="form-control" name="student_number" type="text" id="student-number-input">
+                                    <div id="student-number-note" class="field-note"></div>
+                                </div>
+                            </div>
+
+                            <div class="row">
                                 <div class="col-md-4 form-group">
+                                    <label>Program/Course</label>
+                                    <select class="form-control" name="program" required>
+                                        <option value="">Select Program</option>
+                                        <option value="BS Computer Science">BS Computer Science</option>
+                                        <option value="BS Information Technology">BS Information Technology</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 form-group">
                                     <label>Birthdate</label>
                                     <input class="form-control" name="birthdate" type="date" required>
                                 </div>
@@ -91,10 +144,6 @@
                                         <option value="female">Female</option>
                                     </select>
                                 </div>
-                                <div class="col-md-3 form-group">
-                                    <label>Student Number</label>
-                                    <input class="form-control" name="student_number" type="text" required>
-                                </div>
                             </div>
 
                             <div class="row">
@@ -103,54 +152,28 @@
                                     <input class="form-control" name="mobile_number" type="tel" maxlength="11"
                                         pattern="[0-9]+" required>
                                 </div>
+
                                 <div class="col-md-4 form-group">
                                     <label>Email Address</label>
                                     <input class="form-control" name="email" type="email" required>
                                 </div>
-                                <div class="col-md-4 form-group">
-                                    <label>Program/Course</label>
-                                    <select class="form-control" name="program" required>
-                                        <option value="">Select Program</option>
-                                        <option value="BS Computer Science">BS Computer Science</option>
-                                        <option value="BS Information Technology">BS Information Technology</option>
-                                    </select>
-                                </div>
-                            </div>
 
-                            <div class="row">
-                                <div class="col-md-3 form-group">
-                                    <label>Status</label>
-                                    <select class="form-control" name="status" required>
-                                        <option value="">Select Status</option>
-                                        <option value="regular">Regular</option>
-                                        <option value="irregular">Irregular</option>
+                                <div class="col-md-4 form-group">
+                                    <label>Society Fee</label>
+                                    <select class="form-control" name="soc_fee" required>
+                                        <option value="">Select Fee Status</option>
+                                        <option value="paid">Paid</option>
+                                        <option value="not paid">Not Paid</option>
                                     </select>
-                                </div>
-                                <div class="col-md-3 form-group">
-                                    <label>Year Level</label>
-                                    <select class="form-control" name="year_level" required>
-                                        <option value="">Select Year Level</option>
-                                        <option value="1">1st Year</option>
-                                        <option value="2">2nd Year</option>
-                                        <option value="3">3rd Year</option>
-                                        <option value="4">4th Year</option>
-                                        <option value="5">5th Year</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-3 form-group">
-                                    <label>Section</label>
-                                    <input class="form-control" name="section" type="text" required>
-                                </div>
-                                <div class="col-md-3 form-group">
-                                    <label>Profile Image</label>
-                                    <input type="file" class="form-control" name="profile_image" accept="image/*"
-                                        required>
                                 </div>
                             </div>
                         </div>
 
                         <div class="card-footer">
                             <button type="submit" class="btn btn-primary">Register Student</button>
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'enroll-students-sub' %}" class="btn btn-success"> Next Page</a>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -158,4 +181,59 @@
         </div>
     </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const statusSelect = document.getElementById('student-status');
+    const yearLevelSelect = document.getElementById('year-level');
+    const studentNumberContainer = document.getElementById('student-number-container');
+    const sectionContainer = document.getElementById('section-container');
+    const studentNumberInput = document.getElementById('student-number-input');
+    const sectionInput = document.getElementById('section-input');
+    const studentNumberNote = document.getElementById('student-number-note');
+    const sectionNote = document.getElementById('section-note');
+
+    function updateFormFields() {
+        const status = statusSelect.value;
+        const yearLevel = yearLevelSelect.value;
+
+        // Handle student number input
+        if (status === 'transferee' || yearLevel === '1') {
+            studentNumberInput.readOnly = true;
+            studentNumberInput.removeAttribute('required');
+            studentNumberContainer.style.display = 'block';
+            studentNumberNote.textContent = 'Student number will be auto-generated';
+            studentNumberNote.classList.add('error');
+        } else {
+            studentNumberInput.readOnly = false;
+            studentNumberInput.setAttribute('required', 'required');
+            studentNumberContainer.style.display = 'block';
+            studentNumberNote.textContent = '';
+            studentNumberNote.classList.remove('error');
+        }
+
+        // Handle section input
+        if (status !== 'regular') {
+            sectionInput.readOnly = true;
+            sectionInput.removeAttribute('required');
+            sectionContainer.style.display = 'block';
+            sectionNote.textContent = 'Section not allowed for this student status';
+            sectionNote.classList.add('error');
+        } else {
+            sectionInput.readOnly = false;
+            sectionInput.setAttribute('required', 'required');
+            sectionContainer.style.display = 'block';
+            sectionNote.textContent = '';
+            sectionNote.classList.remove('error');
+        }
+    }
+
+    // Add event listeners
+    statusSelect.addEventListener('change', updateFormFields);
+    yearLevelSelect.addEventListener('change', updateFormFields);
+
+    // Initial setup
+    updateFormFields();
+});
+</script>
 {% endblock %}

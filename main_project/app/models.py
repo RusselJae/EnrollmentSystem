@@ -4,37 +4,7 @@ from django.contrib.auth.models import AbstractUser
 from django.forms import ValidationError
 from django.utils import timezone
 
-# Create your models here.
-# class AppCsStudents(models.Model):
-#     student_number = models.IntegerField()
-#     first_name = models.CharField(max_length=50)
-#     middle_name = models.CharField(db_column='middle name', max_length=50, blank=True, null=True)  # Field renamed to remove unsuitable characters.
-#     last_name = models.CharField(db_column='last name', max_length=50)  # Field renamed to remove unsuitable characters.
-#     course = models.CharField(max_length=50)
-#     year_level = models.IntegerField()
-#     section = models.IntegerField()
-#     status = models.CharField(max_length=50)
-#     enrollment_status = models.CharField(max_length=50)
 
-#     class Meta:
-#         managed = False
-#         db_table = 'app_cs_students'
-
-
-# class AppItStudents(models.Model):
-#     student_number = models.IntegerField()
-#     first_name = models.CharField(max_length=50)
-#     middle_name = models.CharField(max_length=50)
-#     last_name = models.CharField(max_length=50)
-#     course = models.CharField(max_length=50)
-#     year_level = models.CharField(max_length=50)
-#     section = models.CharField(max_length=50)
-#     status = models.CharField(max_length=50)
-#     enrollment_status = models.CharField(max_length=50)
-
-#     class Meta:
-#         managed = False
-#         db_table = 'app_it_students'
 
 
 class AppCsStudents(models.Model):
@@ -80,6 +50,7 @@ class AppCsStudents(models.Model):
     STATUS_CHOICES = [
         ('regular', 'Regular'),
         ('irregular', 'Irregular'),
+        ('transferee', 'Transferee'),
     ]
     status = models.CharField(max_length=10, choices=STATUS_CHOICES)
     
@@ -88,17 +59,18 @@ class AppCsStudents(models.Model):
         ('2', '2nd Year'),
         ('3', '3rd Year'),
         ('4', '4th Year'),
-        ('5', '5th Year'),
     ]
     year_level = models.CharField(max_length=50, choices=YEAR_CHOICES)
     
     section = models.CharField(max_length=50)
     
-    profile_image = models.ImageField(
-        upload_to='student_profiles/', 
-        null=True, 
-        blank=True
-    )
+    FEE_CHOICES = [
+        ('paid', 'Paid'),
+        ('not paid', 'Not Paid'),
+    ]
+    soc_fee = models.CharField(max_length=50, choices=FEE_CHOICES)
+    
+    date_enrolled = models.DateField(blank=True, null=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -172,6 +144,7 @@ class AppItStudents(models.Model):
     STATUS_CHOICES = [
         ('regular', 'Regular'),
         ('irregular', 'Irregular'),
+        ('transferee', 'Transferee'),
     ]
     status = models.CharField(max_length=10, choices=STATUS_CHOICES)
     
@@ -180,17 +153,19 @@ class AppItStudents(models.Model):
         ('2', '2nd Year'),
         ('3', '3rd Year'),
         ('4', '4th Year'),
-        ('5', '5th Year'),
     ]
     year_level = models.CharField(max_length=2, choices=YEAR_CHOICES)
     
     section = models.CharField(max_length=50)
     
-    profile_image = models.ImageField(
-        upload_to='student_profiles/', 
-        null=True, 
-        blank=True
-    )
+   
+    FEE_CHOICES = [
+        ('paid', 'Paid'),
+        ('not paid', 'Not Paid'),
+    ]
+    soc_fee = models.CharField(max_length=50, choices=FEE_CHOICES)
+    
+    date_enrolled = models.DateField(blank=True, null=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -220,3 +195,56 @@ class AppItStudents(models.Model):
         
     def __str__(self):
         return f"{self.first_name} {self.last_name} (IT - {self.student_number})"
+    
+    
+class AppCsStudentsSub(models.Model):
+    student_number = models.IntegerField(unique=True)
+    sub1 = models.CharField(max_length=100)
+    sub2 = models.CharField(max_length=100)
+    sub3 = models.CharField(max_length=100)
+    sub4 = models.CharField(max_length=100)
+    sub5 = models.CharField(max_length=100)
+    sub6 = models.CharField(max_length=100)
+    sub7 = models.CharField(max_length=100)
+    sub8 = models.CharField(max_length=100)
+    sub9 = models.CharField(max_length=100)
+    total_units = models.IntegerField()
+
+    class Meta:
+        managed = True
+        db_table = 'app_cs_students_sub'
+        
+class AppItStudentsSub(models.Model):
+    student_number = models.IntegerField(unique=True)
+    sub1 = models.CharField(max_length=100)
+    sub2 = models.CharField(max_length=100)
+    sub3 = models.CharField(max_length=100)
+    sub4 = models.CharField(max_length=100)
+    sub5 = models.CharField(max_length=100)
+    sub6 = models.CharField(max_length=100)
+    sub7 = models.CharField(max_length=100)
+    sub8 = models.CharField(max_length=100)
+    sub9 = models.CharField(max_length=100)
+    total_units = models.IntegerField()
+
+    class Meta:
+        managed = True
+        db_table = 'app_it_students_sub'
+
+
+class AppSub(models.Model):
+    sub_code = models.CharField(max_length=50)
+    sub_name = models.CharField(max_length=100)
+    lab_units = models.IntegerField()
+    lec_units = models.IntegerField()
+    year_level = models.IntegerField()
+    semester = models.IntegerField()
+    cs = models.CharField(max_length=50)
+    it = models.CharField(max_length=50)
+
+    class Meta:
+        managed = True
+        db_table = 'app_sub'
+
+
+

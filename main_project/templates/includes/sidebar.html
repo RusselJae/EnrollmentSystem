@@ -2,20 +2,19 @@
  {% load static %}
  <aside class="main-sidebar sidebar-dark-primary elevation-4">
   <!-- Brand Logo -->
-  <a href="#" class="brand-link">
-    
-    <span class="brand-text font-weight-dark">Enrollment System</span>
+  <a href="#" class="brand-link" style="display: flex; align-items: center; justify-content: center; flex-direction: column;">
+    <span class="brand-text font-weight-dark" style="text-align: center; font-size: 18px;">Enrollment System</span>
   </a>
 
   <!-- Sidebar -->
   <div class="sidebar">
     <!-- Sidebar user panel (optional) -->
-    <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+    <div class="user-panel mt-3 pb-3 mb-3 d-flex" style="align-items: center;">
       <div class="image">
-        <img src="#" class="img-circle elevation-2">
+        <img src="{% static 'images/logo.svg' %}" class="img-circle elevation-5" style="width: 60px; height: 60px;">
       </div>
       <div class="info">
-        <a href="#" class="d-block"></a>
+        <a href="#" class="d-block">Cavite State University <br> Bacoor Campus</a>
       </div>
     </div>
 
@@ -29,16 +28,16 @@
              with font-awesome or any other icon font library -->
   
         <li class="nav-item">
-          <a href="{% url 'dashboard1' %}"  class="nav-link active">
+          <a href="{% url 'dashboard1' %}"  class="nav-link {% if request.resolver_match.url_name == 'dashboard1' %}active{% endif %}">
             <i class="nav-icon fas fa-tachometer-alt"></i>
             <p>
               Dashboard
-              
+
             </p>
           </a>
         </li>
         <li class="nav-item">
-          <a href="#" class="nav-link">
+          <a href="#" class="nav-link {% if request.resolver_match.url_name == 'add-students' or request.resolver_match.url_name == 'enroll-students-sub' %}active{% endif %}">
             <i class="nav-icon fas fa-copy"></i>
             <p>
              Students
@@ -48,53 +47,23 @@
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="{% url 'add-students' %}" class="nav-link">
+              <a href="{% url 'add-students' %}" class="nav-link {% if request.resolver_match.url_name == 'add-students' %}active{% endif %} ">
                 <i class="far fa-circle nav-icon"></i>
                 <p>Add Students</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{% url 'manage-students' %}" class="nav-link">
+              <a href="{% url 'enroll-students-sub' %}" class="nav-link {% if request.resolver_match.url_name == 'enroll-students-sub' %}active{% endif %}">
                 <i class="far fa-circle nav-icon"></i>
-                <p>Manage Students</p>
+                <p>Enroll Subjects</p>
               </a>
             </li>
           
           </ul>
         </li>
         <li class="nav-item">
-          <a href="#" class="nav-link">
-            <i class="nav-icon fas fa-chart-pie"></i>
-            <p>
-              Student Type
-              <i class="right fas fa-angle-left"></i>
-            </p>
-          </a>
-          <ul class="nav nav-treeview">
-            <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="far fa-circle nav-icon"></i>
-                <p>Old Students</p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="far fa-circle nav-icon"></i>
-                <p>New Students</p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="far fa-circle nav-icon"></i>
-                <p>Transferee Students</p>
-              </a>
-            </li>
-          
-          </ul>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <i class="nav-icon fas fa-tree"></i>
+          <a href="#" class="nav-link {% if request.resolver_match.url_name == 'enrolled' or request.resolver_match.url_name == 'not-enrolled' %}active{% endif %}">
+            <i class="nav-icon fas fa-envelope"></i>
             <p>
               Enrollment Status
               <i class="fas fa-angle-left right"></i>
@@ -102,13 +71,13 @@
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="#" class="nav-link">
+              <a href="{% url 'enrolled' %}" class="nav-link {% if request.resolver_match.url_name == 'enrolled' %}active{% endif %}">
                 <i class="far fa-circle nav-icon"></i>
                 <p>Enrolled</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="#" class="nav-link">
+              <a href="{% url 'not-enrolled' %}" class="nav-link {% if request.resolver_match.url_name == 'not-enrolled' %}active{% endif %}">
                 <i class="far fa-circle nav-icon"></i>
                 <p>Not Enrolled</p>
               </a>
@@ -117,79 +86,38 @@
           </ul>
         </li>
         <li class="nav-item">
+          <a href="{% url 'manage-students' %}" class="nav-link {% if request.resolver_match.url_name == 'manage-students' %}active{% endif %}">
+            <i class="nav-icon fas fa-chart-pie"></i>
+            <p>
+              Manage Students
+            </p>
+          </a>
+        </li>
+        <li class="nav-item">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-edit"></i>
             <p>
-              
-              <i class="fas fa-angle-left right"></i>
+              Section
             </p>
           </a>
-          <ul class="nav nav-treeview">
-            <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="far fa-circle nav-icon"></i>
-                <p></p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="far fa-circle nav-icon"></i>
-                <p></p>
-              </a>
-            </li>
-          
-           
-          </ul>
-        </li>
-      
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <i class="nav-icon far fa-calendar-alt"></i>
-            <p>
-             
-           
-            </p>
-          </a>
-        </li>
-        
-        
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <i class="nav-icon far fa-envelope"></i>
-            <p>
-              
-              <i class="fas fa-angle-left right"></i>
-            </p>
-          </a>
-          <ul class="nav nav-treeview">
-            <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="far fa-circle nav-icon"></i>
-                <p></p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="far fa-circle nav-icon"></i>
-                <p></p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="far fa-circle nav-icon"></i>
-                <p></p>
-              </a>
-            </li>
-          </ul>
-        </li>
-        
+        </li> 
+
        
         <li class="nav-item">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-search"></i>
             <p>
-              
-              <i class="fas fa-angle-left right"></i>
+              Search
+            </p>
+          </a>
+     
+        </li>
+
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon fas fa-trash"></i>
+            <p>
+              Archive
             </p>
           </a>
      
