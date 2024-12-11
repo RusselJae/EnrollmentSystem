@@ -11,10 +11,16 @@
         <h1
             style="text-align: center; color: #000; font-size: 30px; margin-bottom: 15px;   font-family: 'poppins', sans-serif;">
             Sign In</h1>
-        <form action="" method="POST">
+        
+        {% if form.errors %}
+        <div class="alert alert-danger" style="color: red; text-align: center;">
+            Your username and password didn't match. Please try again.
+        </div>
+        {% endif %}
+
+        <form method="POST">
             {% csrf_token %}
             <fieldset class="form-group">
-                <!-- <legend class="border-bottom mb-4" style="color: black;">Sign In Now</legend> -->
                 {{ form|crispy }}
             </fieldset>
             <div class="button-container">
@@ -27,7 +33,7 @@
     width: 500px; height: 50px; margin-left: auto;  margin-right: auto; position: relative; top: -50px;">
         <div class="form-group">
             <p class="text-muted ml-3" style="position: relative; bottom: -10px; color: #000 !important;">Don't have an
-                account yet? <a href="{% url 'register' %}">Sign In</a>
+                account yet? <a href="{% url 'register' %}">Sign Up</a>
             </p>
         </div>
     </div>

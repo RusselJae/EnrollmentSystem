@@ -1,0 +1,221 @@
+
+
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container my-5">
+    <div class="card shadow-sm mb-4">
+        <div class="card-header text-black" style="background-color: #89ff71;">
+            <h2 class="text-center mb-0">Student Registration Form</h2>
+        </div>
+        <div class="card-body">
+            <h1 class="text-center mb-2" style="position: relative; left: -3%;">
+                <img src="{% static 'images/logo.svg' %}" alt="" style="width: 80px; height: auto; position: relative;">
+                Cavite State University
+                <h3 class="text-center" style="font-size: 15px; position: relative; top: -30px;">Bacoor City Campus</h3>
+            </h1>
+
+
+            <div class="card mb-4">
+                <div class="card-header" style="background-color: #89ff71;">
+                    <h3 class="mb-0">Student Information</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Student Number:</strong> {{ student.student_number }}</p>
+                            <p><strong>Student Name:</strong>
+                                {{ student.first_name }}
+                                {% if student.middle_name %}{{ student.middle_name }}{% endif %}
+                                {{ student.last_name }}
+                                {% if student.suffix %}{{ student.suffix }}{% endif %}
+                            </p>
+                            <p><strong>Course:</strong> {{ student.program }}</p>
+                            <p><strong>Year:</strong> {{ student.get_year_level_display }}</p>
+                            <p><strong>Section:</strong> {{ student.section }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Semester:</strong>
+                                {% if student.semester == '1' %}1st Semester{% endif %}
+                                {% if student.semester == '2' %}2nd Semester{% endif %}
+                                {% if student.semester == '3' %}Mid Year{% endif %}
+                            </p>
+                            <p><strong>School Year:</strong>
+                                {% now "Y" as current_year %}
+                                {{ current_year }} - {{ current_year|add:"1" }}
+                            </p>
+                            <p><strong>Encoder:</strong> Admin</p>
+                            <p><strong>Date:</strong> {{ student.date_enrolled|default:"Not Enrolled" }}</p>
+                            <p><strong>Address:</strong> {{ student.address }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            {% if subjects and subjects|length > 0 %}
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Sched</th>
+                        <th>Course Code</th>
+                        <th>Course Description</th>
+                        <th>Lecture Units</th>
+                        <th>Lab Units</th>
+                        <th>Time</th>
+                        <th>Day</th>
+                        <th>Room</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for subject in subjects %}
+                    <tr>
+                        <td>{{ subject.sched }}</td>
+                        <td>{{ subject.subject_code }}</td>
+                        <td>{{ subject.course_description }}</td>
+                        <td>{{ subject.lecture_units }}</td>
+                        <td>{{ subject.lab_units }}</td>
+                        <td>{{ subject.time }}</td>
+                        <td>{{ subject.day }}</td>
+                        <td>{{ subject.room }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th style="text-align: center;">Lab Fees</th>
+                        <th style="text-align: center;">Other Fees</th>
+                        <th style="text-align: center;">Assessment</th>
+                        <th style="text-align: center;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Com. Lab: ₱ 800.00</td>
+                        <td>NSTP: ₱ - </td>
+                        <td>Tuition Feee: ₱ 3,200.00</td>
+                        <td>Total Units: {{ total_units }}</td>
+                    </tr>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <td></td>
+                        <td>Reg. Fee: ₱ 55.00</td>
+                        <td>SFDF: ₱ 1,500.00 </td>
+                        <td>Total Hours: </td>
+                    </tr>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <td></td>
+                        <td>ID: ₱ -</td>
+                        <td>SRF: ₱ 2025.00</td>
+                        <td>Total Amount: ₱ 8,290.00</td>
+                    </tr>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <td></td>
+                        <td>Late Reg.: ₱ -</td>
+                        <td>Misc.: ₱ 435.00</td>
+                        <td>Scholarship: CHED Free Tuition and Misc. Fee</td>
+                    </tr>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <td></td>
+                        <td>Insurance: ₱ 25.00</td>
+                        <td>Athletics: ₱ 100.00</td>
+                        <td style="text-align: center;">Terms of Payment</td>
+                    </tr>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>SCUAA: ₱ 100.00</td>
+                        <td>First: ₱ 8,290.00</td>
+                    </tr>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>Library Fee: ₱ 50.00</td>
+                        <td>Second: ₱ -</td>
+                    </tr>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>Lab Fees: ₱ 800.00</td>
+                        <td>Third: ₱ -</td>
+                    </tr>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>Other Fees: ₱ 80.00</td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="card mb-4">
+                <div class="card-header" style="background-color: #89ff71;">
+                    <h3 class="mb-0">Additional Student Details</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <p class="mb-4" style="font-size: 14px; color: #3b812d;">NOTE: Your slots on the above
+                                subjects will be confirmed only upon payment </p>
+                            <p><strong>Old/New Student:</strong>
+                                {% if student.get_year_level_display == '1st Year' and student.semester == '1' %}
+                                New Student
+                                {% elif student.status == 'transferee' %}
+                                New Student
+                                {% else %}
+                                Old Student
+                                {% endif %}
+                            </p>
+                            <p><strong>Registration Status:</strong>
+                                {% if student.status == 'regular' %}Regular{% endif %}
+                                {% if student.status == 'irregular' %}Irregular{% endif %}
+                                {% if student.status == 'transferee' %}Irregular{% endif %}
+                            </p>
+                            <p><strong>Date of Birth:</strong> {{ student.birthdate }}</p>
+                            <p><strong>Gender:</strong> {{ student.get_gender_display }}</p>
+                            <p><strong>Contact Number:</strong> {{ student.mobile_number }}</p>
+                            <p><strong>Email Address:</strong> {{ student.email }}</p>
+                            <p>Student’s Signature: <span
+                                    style="display: inline-block; width: 200px; border-bottom: 1px solid black;"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex justify-content-end mt-4">
+                <!-- Print Button -->
+                <button id="printButton" class="btn btn-success" onclick="printContent()">Print or Save as PDF</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function printContent() {
+        window.print();
+    }
+</script>
+
+
+
+{% endblock content %}

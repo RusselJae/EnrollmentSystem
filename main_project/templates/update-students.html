@@ -82,15 +82,15 @@
                             </div>
 
                             <div class="row">
-                                <div class="col-md-4 form-group">
+                                <div class="col-md-3 form-group">
                                     <label>Mobile Number</label>
                                     <input class="form-control" name="mobile_number" type="tel" maxlength="11" pattern="[0-9]+" value="{{ student.mobile_number }}" required>
                                 </div>
-                                <div class="col-md-4 form-group">
+                                <div class="col-md-3 form-group">
                                     <label>Email Address</label>
                                     <input class="form-control" name="email" type="email" value="{{ student.email }}" required>
                                 </div>
-                                <div class="col-md-4 form-group">
+                                <div class="col-md-3 form-group">
                                     <label>Program/Course</label>
                                     <select class="form-control" name="program" required>
                                         <option value="">Select Program</option>
@@ -99,9 +99,6 @@
                                         {% endfor %}
                                     </select>
                                 </div>
-                            </div>
-
-                            <div class="row">
                                 <div class="col-md-3 form-group">
                                     <label>Status</label>
                                     <select class="form-control" name="status" required>
@@ -110,6 +107,13 @@
                                         <option value="irregular" {% if student.status == "irregular" %}selected{% endif %}>Irregular</option>
                                         <option value="transferee" {% if student.status == "transferee" %}selected{% endif %}>Transferee</option>
                                     </select>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-3 form-group">
+                                    <label>Address</label>
+                                    <input class="form-control" name="address" type="text" value="{{ student.address }}" required>
                                 </div>
                                 <div class="col-md-2 form-group">
                                     <label>Year Level</label>

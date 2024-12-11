@@ -19,8 +19,8 @@
 <section id="inputSection" class="content">
     <div class="container-fluid">
         <div class="card card-primary">
-            <div class="card-header">
-                <h3 class="card-title" id="semesterTitle">Comprehensive Semester Input</h3>
+            <div class="card-header" style="background-color: #165319; text-align: center;" >
+                <h3 class="card-title" id="semesterTitle">Subject Input</h3>
             </div>
             <form role="form" id="enrollmentForm">
                 <div class="card-body">
@@ -215,67 +215,68 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     document.getElementById('enrollmentForm').addEventListener('submit', function (e) {
-        e.preventDefault();
+    e.preventDefault();
 
-        // Get student input details
-        const studentId = document.getElementById('studentInput').value;
-        const totalUnits = parseInt(totalLecUnits.value) + parseInt(totalLabUnits.value);
+    // Get student input details
+    const studentId = document.getElementById('studentInput').value;
+    const totalUnits = parseInt(totalLecUnits.value) + parseInt(totalLabUnits.value);
+    const semesterSelect = document.getElementById('semesterSelect');
+    const semester = semesterSelect ? semesterSelect.value : '';
 
-        // Prepare subjects data
-        const subjects = [];
-        for (let i = 1; i <= 9; i++) {
-            const subjectSelect = document.getElementById(`category${i}`);
-            if (subjectSelect.value) {
-                subjects.push(subjectSelect.value);
-            }
+    // Prepare subjects data
+    const subjects = [];
+    for (let i = 1; i <= 9; i++) {
+        const subjectSelect = document.getElementById(`category${i}`);
+        if (subjectSelect.value) {
+            subjects.push(subjectSelect.value);
         }
+    }
 
-        // Determine the route based on the program
-        let enrollmentRoute = '';
-        const programSelect = document.getElementById('programSelect'); // Assuming you add this to the form
-        const program = programSelect ? programSelect.value : '';
+    // Determine the route based on the program
+    const programSelect = document.getElementById('programSelect');
+    const program = programSelect ? programSelect.value : '';
 
-        // Prepare data for submission
-        const formData = {
-            student_number: studentId,
-            sub1: subjects[0] || '',
-            sub2: subjects[1] || '',
-            sub3: subjects[2] || '',
-            sub4: subjects[3] || '',
-            sub5: subjects[4] || '',
-            sub6: subjects[5] || '',
-            sub7: subjects[6] || '',
-            sub8: subjects[7] || '',
-            sub9: subjects[8] || '',
-            total_units: totalUnits
-        };
+    // Prepare data for submission
+    const formData = {
+        student_number: studentId,
+        sub1: subjects[0] || '',
+        sub2: subjects[1] || '',
+        sub3: subjects[2] || '',
+        sub4: subjects[3] || '',
+        sub5: subjects[4] || '',
+        sub6: subjects[5] || '',
+        sub7: subjects[6] || '',
+        sub8: subjects[7] || '',
+        sub9: subjects[8] || '',
+        total_units: totalUnits,
+        semester: semester  // Add semester to the form data
+    };
 
-        // Submit to appropriate endpoint based on program
-        fetch('/enroll_student/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken') // Ensure you have a function to get CSRF token
-            },
-            body: JSON.stringify({
-                program: program,
-                enrollment_data: formData
-            })
+    // Submit to appropriate endpoint based on program
+    fetch('/enroll_student/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            program: program,
+            enrollment_data: formData
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Enrollment successful!');
-                // Optionally reset the form or redirect
-            } else {
-                alert('Enrollment failed: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred during enrollment.');
-        });
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Enrollment successful!');
+        } else {
+            alert('Enrollment failed: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred during enrollment.');
     });
+});
 
     // Utility function to get CSRF token from cookies
     function getCookie(name) {

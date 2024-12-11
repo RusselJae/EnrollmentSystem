@@ -1,3 +1,48 @@
+<style>
+  @media print {
+
+      #printButton,
+      form {
+          display: none;
+      }
+
+      body {
+          margin: 0;
+          padding: 0;
+          background-color: #fff;
+          background-image: none !important;
+      }
+
+
+      .content-header,
+      .breadcrumb {
+          display: none;
+          /* Exclude unnecessary headers */
+      }
+
+      .table {
+          page-break-inside: auto;
+          /* Avoid breaking rows across pages */
+      }
+
+      .table tbody tr {
+          page-break-inside: avoid;
+          page-break-after: auto;
+      }
+
+      .main-footer {
+          display: none;
+      }
+
+      #search-form {
+          display: none;
+      }
+      #navbar {
+        display: none;
+      }
+  }
+</style>
+
 <!doctype html>
 {% load static %}
 <html lang="en">
@@ -89,7 +134,7 @@
   </nav> -->
 
 
-  <nav class="navbar navbar-expand-lg"
+  <nav class="navbar navbar-expand-lg" id="navbar"
     style="background-color: #fafafa; font-size: 15px; font-weight: 0 !important; height: auto; border-bottom: 3px solid #0d722c ;">
     <div class="container-fluid">
       <a class="navbar-brand" href="{% url 'home' %}">
@@ -107,22 +152,7 @@
               <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Enroll</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Checklist</a>
-            </li>
-            <li>
-              <form class="search-form" role="search">
-                <div class="input-group">
-                  <input class="form-control" type="search" placeholder="Search" aria-label="Search">
-                  <button class="btn btn-success" type="submit">
-                    <i class="fas fa-search"></i> Search</button>
-                </div>
-              </form>
+              <a class="nav-link" href="{% url 'cor' %}">COR</a>
             </li>
           </ul>
         </div>
@@ -137,7 +167,7 @@
             <li>
               <hr class="dropdown-divider">
             </li>
-            <li><a class="dropdown-item" href="{% url 'login' %}">Logout</a></li>
+            <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
           </ul>
         </li>
       </div>

@@ -3,18 +3,18 @@ from itertools import chain
 from django.db import IntegrityError
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404, render, redirect
-from django.contrib.auth.forms import UserCreationForm
-from .forms import UserRegisterForm
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib.auth import login, authenticate
+from django.contrib.admin import AdminSite
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import logout
 from django.http import Http404, HttpResponseRedirect
 from .models import AppCsStudents, AppCsStudentsSub, AppItStudents, AppItStudentsSub, AppSub
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .forms import StudentUpdateForm 
+from .forms import StudentUpdateForm, UserRegisterForm
 from django.contrib import messages
 from django.core.files.storage import default_storage
-from django.db.models import Value, CharField, Q  # Import for annotations
+from django.db.models import Value, CharField, Q, Count # Import for annotations
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
@@ -25,6 +25,9 @@ from django.http import JsonResponse
 from django.db import transaction
 from django.db.models import Max
 from django.utils.timezone import now
+from django.urls import reverse_lazy
+from django.contrib.auth.views import LoginView
+
 
 
 
@@ -35,6 +38,20 @@ def home(request):
 def base4(request):
     return render(request, "base4.html")
 
+class CustomLoginView(LoginView):
+    template_name = 'login.html'  # Make sure this matches your template name
+
+    def get_success_url(self):
+        # Check if the logged-in user is a superuser
+        if self.request.user.is_superuser:
+            return reverse_lazy('dashboard1')  # Replace with your dashboard URL name
+        else:
+            return reverse_lazy('home')  # Replace with your home page URL name
+
+def doLogout(request):
+    logout(request)
+    request.session.flush()  # Clear the session including CSRF token
+    return redirect('login')
 
 def register(request):
     if request.method == "POST":
@@ -69,7 +86,6 @@ def dashboard1(request):
     # Count IT students
     it_student_count = AppItStudents.objects.count()
     
-    
     enrolled_students = (
         AppCsStudents.objects.exclude(date_enrolled__isnull=True).count() + 
         AppItStudents.objects.exclude(date_enrolled__isnull=True).count()
@@ -81,14 +97,29 @@ def dashboard1(request):
         AppItStudents.objects.filter(date_enrolled__isnull=True).count()
     )
     
+    # Combine irregular and transferee students as irregular
+    regular_students = (
+        AppCsStudents.objects.filter(status='regular').count() + 
+        AppItStudents.objects.filter(status='regular').count()
+    )
+    
+    irregular_students = (
+        AppCsStudents.objects.filter(status__in=['irregular', 'transferee']).count() + 
+        AppItStudents.objects.filter(status__in=['irregular', 'transferee']).count()
+    )
+    
     # Prepare context to pass to the template
     context = {
         'cs_student_count': cs_student_count,
         'it_student_count': it_student_count,
         'total_students': cs_student_count + it_student_count,
         'enrolled_students': enrolled_students,
-        'unenrolled_students': unenrolled_students
+        'unenrolled_students': unenrolled_students,
+        'regular_students': regular_students,
+        'irregular_students': irregular_students
     }
+    
+    return render(request, "dashboard1.html", context)
     
     return render(request, "dashboard1.html", context)
 
@@ -137,6 +168,7 @@ def ADD_STUDENT(request):
                 status = request.POST['status']
                 year_level = request.POST['year_level']
                 soc_fee = request.POST['soc_fee']
+                address = request.POST['address']
 
                 # Generate student number for first-year or transferee students
                 if year_level == "1" or status.lower() == "transferee":
@@ -196,6 +228,7 @@ def ADD_STUDENT(request):
                         year_level=year_level,
                         section=section,
                         soc_fee=soc_fee,
+                        address=address,
                     )
                 elif program == 'BS Information Technology':
                     student_obj = AppItStudents(
@@ -213,7 +246,7 @@ def ADD_STUDENT(request):
                         status=status,
                         year_level=year_level,
                         section=section,
-                        soc_fee=soc_fee,
+                        address=address,
                     )
                 else:
                     # Handle other programs or raise an error
@@ -243,27 +276,26 @@ def MANAGE_STUDENTS(request):
     cs_students = AppCsStudents.objects.values(
         'id', 'first_name', 'middle_name', 'last_name', 'suffix', 
         'student_number', 'program', 'year_level', 'section', 
-        'email', 'mobile_number', 'status', 'soc_fee', 'date_enrolled'
+        'email', 'mobile_number', 'status', 'soc_fee', 'date_enrolled', 'address'
     ).annotate(type=Value('CS', output_field=CharField()))
     
     it_students = AppItStudents.objects.values(
         'id', 'first_name', 'middle_name', 'last_name', 'suffix', 
         'student_number', 'program', 'year_level', 'section', 
-        'email', 'mobile_number', 'status', 'soc_fee', 'date_enrolled'
+        'email', 'mobile_number', 'status', 'soc_fee', 'date_enrolled', 'address'
     ).annotate(type=Value('IT', output_field=CharField()))
 
     # Combine both querysets
     combined_students = list(chain(cs_students, it_students))
     
     # Fetch program choices dynamically
-# Fetch program choices dynamically
     program_choices = set(
-    AppCsStudents.objects.values_list('program', flat=True)
+        AppCsStudents.objects.values_list('program', flat=True)
     ).union(
-    AppItStudents.objects.values_list('program', flat=True)
+        AppItStudents.objects.values_list('program', flat=True)
     )
 
-# Convert to list of tuples for template compatibility
+    # Convert to list of tuples for template compatibility
     program_choices = [(program, program) for program in program_choices]
     
     # Filter by selected program (if any)
@@ -272,6 +304,17 @@ def MANAGE_STUDENTS(request):
         combined_students = [
             student for student in combined_students 
             if student['program'] == selected_program
+        ]
+    
+    # Search functionality with robust type handling
+    search_query = request.GET.get('search', '').strip().lower()
+    if search_query:
+        combined_students = [
+            student for student in combined_students 
+            if (search_query in str(student['student_number']).lower() or 
+                search_query in str(student['first_name']).lower() or 
+                search_query in str(student['middle_name'] or '').lower() or 
+                search_query in str(student['last_name']).lower())
         ]
     
     # Sort by student_number
@@ -294,7 +337,6 @@ def MANAGE_STUDENTS(request):
         'selected_program': selected_program,
     }
     return render(request, 'manage-students.html', context)
-
 
 
 def update_students(request, student_number):
@@ -399,6 +441,7 @@ def enroll_student(request):
 
         # Validate input
         student_number = enrollment_data.get('student_number')
+        semester = enrollment_data.get('semester', '')  # New line to get semester
         if not student_number:
             return JsonResponse({
                 'success': False, 
@@ -431,7 +474,8 @@ def enroll_student(request):
                         'sub7': enrollment_data.get('sub7', ''),
                         'sub8': enrollment_data.get('sub8', ''),
                         'sub9': enrollment_data.get('sub9', ''),
-                        'total_units': enrollment_data.get('total_units', 0)
+                        'total_units': enrollment_data.get('total_units', 0),
+                        'semester': semester  # Add semester to the subject data
                     }
                     
                     # Create new subject enrollment
@@ -471,7 +515,8 @@ def enroll_student(request):
                         'sub7': enrollment_data.get('sub7', ''),
                         'sub8': enrollment_data.get('sub8', ''),
                         'sub9': enrollment_data.get('sub9', ''),
-                        'total_units': enrollment_data.get('total_units', 0)
+                        'total_units': enrollment_data.get('total_units', 0),
+                        'semester': semester  # Add semester to the subject data
                     }
                     
                     # Create new subject enrollment
@@ -820,9 +865,288 @@ def enrolled(request):
 
 
 
+@login_required
+def cor(request):
+    """
+    View to display student registration details based on authenticated user's email
+    """
+    try:
+        # First, try to find the student in CS students
+        student = AppCsStudents.objects.get(email=request.user.email)
+        
+        try:
+            student_sub = AppCsStudentsSub.objects.get(student_number=student.student_number)
+        except AppCsStudentsSub.DoesNotExist:
+            # If student subjects not found, indicate not enrolled
+            return render(request, 'cor.html', {'error_message': 'This student is not enrolled yet.'})
+        
+        program = 'cs'
+        template = 'cor.html'
+        
+    except AppCsStudents.DoesNotExist:
+        try:
+            # If not in CS students, try IT students
+            student = AppItStudents.objects.get(email=request.user.email)
+            
+            try:
+                student_sub = AppItStudentsSub.objects.get(student_number=student.student_number)
+            except AppItStudentsSub.DoesNotExist:
+                # If student subjects not found, indicate not enrolled
+                return render(request, 'cor.html', {'error_message': 'This student is not enrolled yet.'})
+            
+            program = 'it'
+            template = 'cor.html'
+        
+        except AppItStudents.DoesNotExist:
+            # If student not found in either model, show no student found error
+            return render(request, 'cor.html', {'error_message': "There's no student found with this email."})
+    
+    # Prepare subjects with additional details from AppSub
+    subject_details = []
+    total_lec_units = 0
+    total_lab_units = 0
+
+    # List of subject fields to iterate through
+    subject_fields = [
+        'sub1', 'sub2', 'sub3', 'sub4', 'sub5', 
+        'sub6', 'sub7', 'sub8', 'sub9'
+    ]
+
+    for subject_field in subject_fields:
+        subject_code = getattr(student_sub, subject_field).strip()
+        print(f"Checking for subject_code: {subject_code} in AppSub")
+        
+        # Try to find the subject in AppSub based on the subject code and program
+        try:
+            # Determine the correct filter based on program
+            if program == 'cs':
+                sub_details = AppSub.objects.get(sub_code=subject_code, cs='yes')
+            else:
+                sub_details = AppSub.objects.get(sub_code=subject_code, it='yes')
+            
+            subject_info = {
+                'subject_code': subject_code,
+                'subject_name': sub_details.sub_name,
+                'course_description': sub_details.sub_name,
+                'lecture_units': sub_details.lec_units,
+                'lab_units': sub_details.lab_units,
+                'time': 'TBA',
+                'day': 'TBA',
+                'room': 'TBA',
+                'sched': 'TBA'
+            }
+            
+            total_lec_units += sub_details.lec_units
+            total_lab_units += sub_details.lab_units
+            
+            subject_details.append(subject_info)
+        
+        except AppSub.DoesNotExist:
+            # If subject not found in AppSub, continue to next subject
+            continue
+    
+    total_units = total_lec_units + total_lab_units
+    
+    semester = student_sub.semester
+
+    # Modify student object to include semester
+    setattr(student, 'semester', str(semester))
+    
+    # Prepare context with student and subjects
+    context = {
+        'student': student,
+        'subjects': subject_details,
+        'total_units': total_units,
+        'total_lec_units': total_lec_units,
+        'total_lab_units': total_lab_units
+    }
+    
+    return render(request, template, context)
+
+
+
+def is_admin(user):
+    """
+    Check if the logged-in user is a staff/admin
+    """
+    return user.is_staff and user.is_active
+
+@user_passes_test(is_admin)
+def search_cor(request):
+    """
+    Admin view for searching and displaying student registration details
+    """
+    # Initialize context variables
+    context = {
+        'student': None,
+        'subjects': [],
+        'total_units': 0,
+        'total_lec_units': 0,
+        'total_lab_units': 0
+    }
+    
+    # Check if there's a search query
+    search_query = request.GET.get('search', '').strip()
+    
+    # If search query is not empty, attempt to find student
+    if search_query:
+        # Try to find in CS students first
+        student = AppCsStudents.objects.filter(
+            Q(student_number=search_query) | 
+            Q(email=search_query) | 
+            Q(first_name__icontains=search_query) | 
+            Q(last_name__icontains=search_query)
+        ).first()
+        
+        if not student:
+            # If not found in CS, try IT students
+            student = AppItStudents.objects.filter(
+                Q(student_number=search_query) | 
+                Q(email=search_query) | 
+                Q(first_name__icontains=search_query) | 
+                Q(last_name__icontains=search_query)
+            ).first()
+        
+        if not student:
+            context['error'] = 'There\'s no student found'
+            return render(request, 'search_cor.html', context)
+        
+        # Determine program based on student model
+        program = 'cs' if isinstance(student, AppCsStudents) else 'it'
+        
+        try:
+            # Get student subjects
+            student_sub = (
+                AppCsStudentsSub.objects.get(student_number=student.student_number) 
+                if program == 'cs' 
+                else AppItStudentsSub.objects.get(student_number=student.student_number)
+            )
+        except (AppCsStudentsSub.DoesNotExist, AppItStudentsSub.DoesNotExist):
+            context['error'] = 'This student is not enrolled yet'
+            return render(request, 'search_cor.html', context)
+        
+        # Prepare subjects with additional details from AppSub
+        subject_details = []
+        total_lec_units = 0
+        total_lab_units = 0
+
+        # List of subject fields to iterate through
+        subject_fields = [
+            'sub1', 'sub2', 'sub3', 'sub4', 'sub5', 
+            'sub6', 'sub7', 'sub8', 'sub9'
+        ]
+
+        for subject_field in subject_fields:
+            subject_code = getattr(student_sub, subject_field, '').strip()
+            
+            if not subject_code:
+                continue
+            
+            # Try to find the subject in AppSub based on the subject code and program
+            try:
+                # Determine the correct filter based on program
+                if program == 'cs':
+                    sub_details = AppSub.objects.get(sub_code=subject_code, cs='yes')
+                else:
+                    sub_details = AppSub.objects.get(sub_code=subject_code, it='yes')
+                
+                subject_info = {
+                    'subject_code': subject_code,
+                    'subject_name': sub_details.sub_name,
+                    'course_description': sub_details.sub_name,
+                    'lecture_units': sub_details.lec_units,
+                    'lab_units': sub_details.lab_units,
+                    'time': 'TBA',
+                    'day': 'TBA',
+                    'room': 'TBA',
+                    'sched': 'TBA'
+                }
+                
+                total_lec_units += sub_details.lec_units
+                total_lab_units += sub_details.lab_units
+                
+                subject_details.append(subject_info)
+            
+            except AppSub.DoesNotExist:
+                # If subject not found in AppSub, skip
+                continue
+        
+        total_units = total_lec_units + total_lab_units
+        
+        semester = student_sub.semester
+
+        # Modify student object to include semester
+        setattr(student, 'semester', str(semester))
+        
+        # Update context
+        context = {
+            'student': student,
+            'subjects': subject_details,
+            'total_units': total_units,
+            'total_lec_units': total_lec_units,
+            'total_lab_units': total_lab_units
+        }
+    
+    return render(request, 'search_cor.html', context)
+
+
 
 def checklist(request):
     return render(request, "checklist.html")
 
 
+
+def sections(request):
+    # Total student counts
+    cs_student_count = AppCsStudents.objects.count()
+    it_student_count = AppItStudents.objects.count()
+    
+    # Enrollment and student type statistics
+    cs_enrolled_students = AppCsStudents.objects.filter(status='regular').count()
+    it_enrolled_students = AppItStudents.objects.filter(status='regular').count()
+    
+    # Detailed enrollment breakdown by department and year level
+    cs_enrollment_breakdown = (
+        AppCsStudents.objects.values('year_level', 'section')
+        .annotate(
+            student_count=Count('id')
+        )
+        .order_by('year_level', 'section')
+    )
+    
+    it_enrollment_breakdown = (
+        AppItStudents.objects.values('year_level', 'section')
+        .annotate(
+            student_count=Count('id')
+        )
+        .order_by('year_level', 'section')
+    )
+    
+    # Student status breakdown
+    cs_status_breakdown = (
+        AppCsStudents.objects.values('status')
+        .annotate(
+            student_count=Count('id')
+        )
+    )
+    
+    it_status_breakdown = (
+        AppItStudents.objects.values('status')
+        .annotate(
+            student_count=Count('id')
+        )
+    )
+    
+    context = {
+        'cs_student_count': cs_student_count,
+        'it_student_count': it_student_count,
+        'cs_enrolled_students': cs_enrolled_students,
+        'it_enrolled_students': it_enrolled_students,
+        'cs_enrollment_breakdown': cs_enrollment_breakdown,
+        'it_enrollment_breakdown': it_enrollment_breakdown,
+        'cs_status_breakdown': cs_status_breakdown,
+        'it_status_breakdown': it_status_breakdown,
+    }
+    
+    return render(request, 'sections.html', context)
 

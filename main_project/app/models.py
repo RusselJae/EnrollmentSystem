@@ -3,6 +3,8 @@ from django.core.validators import RegexValidator
 from django.contrib.auth.models import AbstractUser
 from django.forms import ValidationError
 from django.utils import timezone
+from django.contrib.auth.models import User
+
 
 
 
@@ -69,6 +71,8 @@ class AppCsStudents(models.Model):
         ('not paid', 'Not Paid'),
     ]
     soc_fee = models.CharField(max_length=50, choices=FEE_CHOICES)
+    
+    address = models.CharField(max_length=100)
     
     date_enrolled = models.DateField(blank=True, null=True)
     
@@ -167,6 +171,8 @@ class AppItStudents(models.Model):
     
     date_enrolled = models.DateField(blank=True, null=True)
     
+    address = models.CharField(max_length=100)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -209,6 +215,7 @@ class AppCsStudentsSub(models.Model):
     sub8 = models.CharField(max_length=100)
     sub9 = models.CharField(max_length=100)
     total_units = models.IntegerField()
+    semester = models.IntegerField()
 
     class Meta:
         managed = True
@@ -226,7 +233,8 @@ class AppItStudentsSub(models.Model):
     sub8 = models.CharField(max_length=100)
     sub9 = models.CharField(max_length=100)
     total_units = models.IntegerField()
-
+    semester = models.IntegerField()
+    
     class Meta:
         managed = True
         db_table = 'app_it_students_sub'

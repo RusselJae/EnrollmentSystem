@@ -32,9 +32,9 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-12">
-                <div class="card card-primary">
-                    <div class="card-header">
-                        <h3 class="card-title">Student Registration Form</h3>
+                <div class="card card-primary" >
+                    <div class="card-header" style="background-color: #165319; text-align: center;">
+                        <h3 class="card-title text-center" >Student Registration Form</h3>
                     </div>
 
                     {% if messages %}
@@ -69,20 +69,20 @@
                             <div class="row">
                                 <div class="col-md-3 form-group">
                                     <label>First Name</label>
-                                    <input class="form-control" name="first_name" type="text" required>
+                                    <input class="form-control" name="first_name" type="text" required value="{{ form_data.first_name|default:'' }}">
                                 </div>
                                 <div class="col-md-3 form-group">
                                     <label>Middle Name</label>
-                                    <input class="form-control" name="middle_name" type="text">
+                                    <input class="form-control" name="middle_name" type="text" value="{{ form_data.middle_name|default:'' }}">
                                 </div>
                                 <div class="col-md-3 form-group">
                                     <label>Last Name</label>
-                                    <input class="form-control" name="last_name" type="text" required>
+                                    <input class="form-control" name="last_name" type="text" required value="{{ form_data.last_name|default:'' }}">
                                 </div>
                                 <div class="col-md-3 form-group">
                                     <label>Suffix</label>
-                                    <input class="form-control" name="suffix" type="text"
-                                        placeholder="Jr., Sr., III, etc.">
+                                    <input class="form-control" name="suffix" type="text" 
+                                        placeholder="Jr., Sr., III, etc." value="{{ form_data.suffix|default:'' }}">
                                 </div>
                             </div>
 
@@ -91,9 +91,9 @@
                                     <label>Status</label>
                                     <select class="form-control" name="status" id="student-status" required>
                                         <option value="">Select Status</option>
-                                        <option value="regular">Regular</option>
-                                        <option value="irregular">Irregular</option>
-                                        <option value="transferee">Transferee</option>
+                                        <option value="regular" {% if form_data.status == 'regular' %}selected{% endif %}>Regular</option>
+                                        <option value="irregular" {% if form_data.status == 'irregular' %}selected{% endif %}>Irregular</option>
+                                        <option value="transferee" {% if form_data.status == 'transferee' %}selected{% endif %}>Transferee</option>
                                     </select>
                                 </div>
 
@@ -101,20 +101,20 @@
                                     <label>Year Level</label>
                                     <select class="form-control" name="year_level" id="year-level" required>
                                         <option value="">Select Year Level</option>
-                                        <option value="1">1st Year</option>
-                                        <option value="2">2nd Year</option>
-                                        <option value="3">3rd Year</option>
-                                        <option value="4">4th Year</option>
+                                        <option value="1" {% if form_data.year_level == '1' %}selected{% endif %}>1st Year</option>
+                                        <option value="2" {% if form_data.year_level == '2' %}selected{% endif %}>2nd Year</option>
+                                        <option value="3" {% if form_data.year_level == '3' %}selected{% endif %}>3rd Year</option>
+                                        <option value="4" {% if form_data.year_level == '4' %}selected{% endif %}>4th Year</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3 form-group" id="section-container">
                                     <label>Section</label>
-                                    <input class="form-control" name="section" type="text" id="section-input">
+                                    <input class="form-control" name="section" type="text" id="section-input" value="{{ form_data.section|default:'' }}">
                                     <div id="section-note" class="field-note"></div>
                                 </div>
                                 <div class="col-md-3 form-group" id="student-number-container">
                                     <label>Student Number</label>
-                                    <input class="form-control" name="student_number" type="text" id="student-number-input">
+                                    <input class="form-control" name="student_number" type="text" id="student-number-input" value="{{ form_data.student_number|default:'' }}">
                                     <div id="student-number-note" class="field-note"></div>
                                 </div>
                             </div>
@@ -124,46 +124,50 @@
                                     <label>Program/Course</label>
                                     <select class="form-control" name="program" required>
                                         <option value="">Select Program</option>
-                                        <option value="BS Computer Science">BS Computer Science</option>
-                                        <option value="BS Information Technology">BS Information Technology</option>
+                                        <option value="BS Computer Science" {% if form_data.program == 'BS Computer Science' %}selected{% endif %}>BS Computer Science</option>
+                                        <option value="BS Information Technology" {% if form_data.program == 'BS Information Technology' %}selected{% endif %}>BS Information Technology</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3 form-group">
                                     <label>Birthdate</label>
-                                    <input class="form-control" name="birthdate" type="date" required>
+                                    <input class="form-control" name="birthdate" type="date" required value="{{ form_data.birthdate|default:'' }}">
                                 </div>
                                 <div class="col-md-2 form-group">
                                     <label>Age</label>
-                                    <input class="form-control" name="age" type="number" min="16" max="100" required>
+                                    <input class="form-control" name="age" type="number" min="16" max="100" required value="{{ form_data.age|default:'' }}">
                                 </div>
                                 <div class="col-md-3 form-group">
                                     <label>Gender</label>
                                     <select class="form-control" name="gender" required>
                                         <option value="">Select Gender</option>
-                                        <option value="male">Male</option>
-                                        <option value="female">Female</option>
+                                        <option value="male" {% if form_data.gender == 'male' %}selected{% endif %}>Male</option>
+                                        <option value="female" {% if form_data.gender == 'female' %}selected{% endif %}>Female</option>
                                     </select>
                                 </div>
                             </div>
 
                             <div class="row">
-                                <div class="col-md-4 form-group">
+                                <div class="col-md-3 form-group">
+                                    <label>Address</label>
+                                    <input class="form-control" name="address" type="address" required value="{{ form_data.address|default:'' }}">
+                                </div>
+                                <div class="col-md-3 form-group">
                                     <label>Mobile Number</label>
                                     <input class="form-control" name="mobile_number" type="tel" maxlength="11"
-                                        pattern="[0-9]+" required>
+                                        pattern="[0-9]+" required value="{{ form_data.mobile_number|default:'' }}">
                                 </div>
 
-                                <div class="col-md-4 form-group">
+                                <div class="col-md-3 form-group">
                                     <label>Email Address</label>
-                                    <input class="form-control" name="email" type="email" required>
+                                    <input class="form-control" name="email" type="email" required value="{{ form_data.email|default:'' }}">
                                 </div>
 
-                                <div class="col-md-4 form-group">
+                                <div class="col-md-3 form-group">
                                     <label>Society Fee</label>
                                     <select class="form-control" name="soc_fee" required>
                                         <option value="">Select Fee Status</option>
-                                        <option value="paid">Paid</option>
-                                        <option value="not paid">Not Paid</option>
+                                        <option value="paid" {% if form_data.soc_fee == 'paid' %}selected{% endif %}>Paid</option>
+                                        <option value="not paid" {% if form_data.soc_fee == 'not paid' %}selected{% endif %}>Not Paid</option>
                                     </select>
                                 </div>
                             </div>

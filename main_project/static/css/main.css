@@ -10,6 +10,7 @@
   text-rendering: optimizeLegibility;
   image-rendering: optimizeQuality;
   font-weight: 700;
+  font-size: 11px;
 }
 
 .container h1 {
@@ -26,7 +27,7 @@
 
 .container {
   padding: 5px 1%;
-  width: 90%;
+  width: 100%;
   margin: 0 auto;
   max-width: 1280px;
   position: relative;

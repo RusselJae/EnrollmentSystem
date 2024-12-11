@@ -51,7 +51,7 @@ class StudentRegistrationForm(forms.ModelForm):
             'first_name', 'middle_name', 'last_name', 'suffix',
             'birthdate', 'age', 'gender', 'mobile_number', 
             'email', 'student_number', 'program', 'status', 
-            'year_level', 'section', 'soc_fee'
+            'year_level', 'section', 'soc_fee', 'address'
         ]
         widgets = {
             'birthdate': forms.DateInput(attrs={'type': 'date'}),
@@ -92,7 +92,7 @@ class StudentUpdateForm(forms.ModelForm):
             'first_name', 'middle_name', 'last_name', 'suffix',
             'birthdate', 'age', 'gender', 'student_number',
             'mobile_number', 'email', 'program', 'status', 
-            'year_level', 'section', 'soc_fee' , 'date_enrolled'
+            'year_level', 'section', 'soc_fee' , 'date_enrolled', 'address'
         ]
 
     def clean_birthdate(self):

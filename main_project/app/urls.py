@@ -33,7 +33,10 @@ urlpatterns = [
     path('checklist/',views.checklist,name="checklist"),
     path('register/',views.register,name="register"),
     path('profile/', views.profile, name='profile'),
-    path('', auth_view.LoginView.as_view(template_name='login.html'), name="login"),
-    path('logout/', views.logout_view, name='logout'),
-
+    # path('', auth_view.LoginView.as_view(template_name='login.html'), name="login"),
+    path('doLogout/', views.doLogout, name='logout'),
+    path('', views.CustomLoginView.as_view(), name='login'),
+    path('cor/', views.cor, name='cor'),
+    path('search_cor/', views.search_cor, name='search_cor'),
+    path('sections/', views.sections, name='sections'),
 ]
