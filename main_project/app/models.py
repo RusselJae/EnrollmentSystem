@@ -79,6 +79,9 @@ class AppCsStudents(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    is_archived = models.BooleanField(default=False)
+    archived_at = models.DateTimeField(null=True, blank=True)
+
     def clean(self):
         """
         Validate program selection
@@ -95,6 +98,23 @@ class AppCsStudents(models.Model):
         """
         self.full_clean()
         return super().save(*args, **kwargs)
+
+    def archive(self):
+        """
+        Method to archive the student
+        """
+        from django.utils import timezone
+        self.is_archived = True
+        self.archived_at = timezone.now()
+        self.save()
+
+    def restore(self):
+        """
+        Method to restore an archived student
+        """
+        self.is_archived = False
+        self.archived_at = None
+        self.save()
 
     class Meta:
         managed = True  # If this is an existing table
@@ -176,6 +196,9 @@ class AppItStudents(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    is_archived = models.BooleanField(default=False)
+    archived_at = models.DateTimeField(null=True, blank=True)
+
     def clean(self):
         """
         Validate program selection
@@ -192,6 +215,23 @@ class AppItStudents(models.Model):
         """
         self.full_clean()
         return super().save(*args, **kwargs)
+
+    def archive(self):
+        """
+        Method to archive the student
+        """
+        from django.utils import timezone
+        self.is_archived = True
+        self.archived_at = timezone.now()
+        self.save()
+
+    def restore(self):
+        """
+        Method to restore an archived student
+        """
+        self.is_archived = False
+        self.archived_at = None
+        self.save()
 
     class Meta:
         managed = True  # If this is an existing table
@@ -214,6 +254,7 @@ class AppCsStudentsSub(models.Model):
     sub7 = models.CharField(max_length=100)
     sub8 = models.CharField(max_length=100)
     sub9 = models.CharField(max_length=100)
+    encoder = models.CharField(max_length=100)
     total_units = models.IntegerField()
     semester = models.IntegerField()
 
@@ -232,6 +273,7 @@ class AppItStudentsSub(models.Model):
     sub7 = models.CharField(max_length=100)
     sub8 = models.CharField(max_length=100)
     sub9 = models.CharField(max_length=100)
+    encoder = models.CharField(max_length=100)
     total_units = models.IntegerField()
     semester = models.IntegerField()
     

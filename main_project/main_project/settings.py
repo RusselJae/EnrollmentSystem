@@ -62,13 +62,22 @@ MIDDLEWARE = [
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+
 
 ROOT_URLCONF = 'main_project.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates'],
+        'DIRS': [ 
+            
+            os.path.join(BASE_DIR, 'templates'),  # Example of adding a project-level templates directory
+            # or for a specific app
+            os.path.join(BASE_DIR, 'app', 'templates'),
+            
+            ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -151,5 +160,5 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-
+LOGIN_URL = '/'
 

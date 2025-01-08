@@ -1,4 +1,14 @@
 <style>
+    #h1-cor {
+        font-family: 'Lora', serif !important; 
+    }
+
+    .table {
+        border: 1px solid green !important; /* Green border for the entire table */
+    }
+
+
+
     @media print {
 
         #printButton,
@@ -49,7 +59,7 @@
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="{% url 'dashboard1' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Home</a></li>
                     <li class="breadcrumb-item active">Manage Students</li>
                 </ol>
             </div>
@@ -58,7 +68,7 @@
 </section>
 
 <section class="content">
-    <div class="container">
+    <div class="container-fluid">
         <!-- Search Form -->
         <div class="card card-primary" id="search-form">
             <div class="card-header" style="background-color: #165319; text-align: center;">
@@ -81,28 +91,28 @@
         {% endif %}
 
         {% if student %}
-        <div class="card mb-4">
+        <div class="card mb-1">
             <div class="card card-primary">
                 <div class="card-header" style="background-color: #39772d;">
-                    <h3 class="text-center mb-0">Student Registration Form</h3>
+                    <h3 class="text-center mb-0">Registration Form</h3>
                 </div>
             </div>
             <div class="card-body">
                 <!-- Rest of the existing template remains the same -->
-                <h1 class="text-center mb-2" style="position: relative; left: -3%;">
+                <h1 class="text-center mb-2" style="position: relative; left: -3%;" id="h1-cor">
                     <img src="{% static 'images/logo.svg' %}" alt=""
                         style="width: 80px; height: auto; position: relative;">
                     Cavite State University
-                    <h3 class="text-center" style="font-size: 15px; position: relative; top: -30px;">Bacoor City Campus
-                    </h3>
+                    <h2 class="text-center" style="font-size: 20px; position: relative; top: -30px;">Bacoor City Campus
+                    </h2>
                 </h1>
 
                 <div class="card mb-4">
-                    <div class="card card-primary">
+                    <!-- <div class="card card-primary">
                         <div class="card-header" style="background-color: #39772d;">
                             <h3 class="card-title">Student Information</h3>
                         </div>
-                    </div>
+                    </div> -->
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6">
@@ -127,7 +137,7 @@
                                     {% now "Y" as current_year %}
                                     {{ current_year }} - {{ current_year|add:"1" }}
                                 </p>
-                                <p><strong>Encoder:</strong> Admin</p>
+                                <p><strong>Encoder:</strong> {{ student.encoder }}</p>
                                 <p><strong>Date:</strong> {{ student.date_enrolled|default:"Not Enrolled" }}</p>
                                 <p><strong>Address:</strong> {{ student.address }}</p>
                             </div>
@@ -256,11 +266,11 @@
                 </table>
 
                 <div class="card mb-4 mt-4">
-                    <div class="card card-primary">
+                    <!-- <div class="card card-primary">
                         <div class="card-header" style="background-color: #39772d;">
                             <h3 class="card-title">Additional Student Details</h3>
                         </div>
-                    </div>
+                    </div> -->
                     <div class="card-body">
                         <div class="row">
                             <div class="col">

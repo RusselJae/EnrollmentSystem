@@ -23,13 +23,13 @@
             <div class="card-header">
                 <h3 class="card-title" id="semesterTitle">
                     {% if existing_student %}
-                        Update Student Enrollment - {{ existing_student.first_name }} {{ existing_student.last_name }}
+                    Update Student Enrollment - {{ existing_student.first_name }} {{ existing_student.last_name }}
                     {% else %}
-                        New Student Enrollment
+                    New Student Enrollment
                     {% endif %}
                 </h3>
             </div>
-            
+
             <form role="form" id="enrollmentForm">
                 <!-- Hidden input for existing student number if updating -->
                 {% if existing_student %}
@@ -82,19 +82,27 @@
                     <div class="form-group row">
                         <div class="col-sm-6">
                             <label for="category{{ i }}">Subject {{ i }}</label>
-                            <select class="form-control subject-select" name="sub{{ i }}" id="category{{ i }}">
-                                <option value="">Select Subject</option>
-                                {% for subject in subjects %}
-                                <option value="{{ subject.sub_code }}" 
-                                    data-lec-units="{{ subject.lec_units }}"
-                                    data-lab-units="{{ subject.lab_units }}" 
-                                    data-year="{{ subject.year_level }}"
-                                    data-semester="{{ subject.semester }}"
-                                    {% if existing_subjects_mapped|get_item:i == subject.sub_code %}selected{% endif %}>
-                                    {{ subject.sub_code }}: {{ subject.sub_name }}
-                                </option>
-                                {% endfor %}
-                            </select>
+                            <div class="input-group">
+                                <select class="form-control subject-select" name="sub{{ i }}" id="category{{ i }}">
+                                    <option value="">Select Subject</option>
+                                    {% for subject in subjects %}
+                                    <option value="{{ subject.sub_code }}" data-lec-units="{{ subject.lec_units }}"
+                                        data-lab-units="{{ subject.lab_units }}" data-year="{{ subject.year_level }}"
+                                        data-semester="{{ subject.semester }}" 
+                                        {% if existing_subjects_mapped|get_item:i == subject.sub_code %}selected{% endif %}>
+                                        {{ subject.sub_code }}: {{ subject.sub_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                {% if existing_subjects_mapped|get_item:i %}
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-danger remove-subject"
+                                        data-subject-index="{{ i }}">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                {% endif %}
+                            </div>
                         </div>
                         <div class="col-sm-3">
                             <label for="lec{{ i }}">Lecture Units</label>
@@ -103,8 +111,8 @@
                         </div>
                         <div class="col-sm-3">
                             <label for="lab{{ i }}">Lab Units</label>
-                            <input type="number" class="form-control lab-hours" id="lab{{ i }}" 
-                                placeholder="Lab Hrs" readonly>
+                            <input type="number" class="form-control lab-hours" id="lab{{ i }}" placeholder="Lab Hrs"
+                                readonly>
                         </div>
                     </div>
                     {% endfor %}
@@ -123,7 +131,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="card-footer">
                     <button type="submit" class="btn btn-primary">
                         {% if existing_student %}Update Enrollment{% else %}Submit Enrollment{% endif %}
@@ -135,209 +143,258 @@
 </section>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const yearLevelSelect = document.getElementById('yearLevelSelect');
-    const semesterSelect = document.getElementById('semesterSelect');
-    const subjectSelects = document.querySelectorAll('.subject-select');
-    const totalLecUnits = document.getElementById('totalLecUnits');
-    const totalLabUnits = document.getElementById('totalLabUnits');
-    const existingStudentNumber = document.getElementById('existingStudentNumber');
-    const programType = document.getElementById('programType');
+    document.addEventListener('DOMContentLoaded', function () {
+        const yearLevelSelect = document.getElementById('yearLevelSelect');
+        const semesterSelect = document.getElementById('semesterSelect');
+        const subjectSelects = document.querySelectorAll('.subject-select');
+        const totalLecUnits = document.getElementById('totalLecUnits');
+        const totalLabUnits = document.getElementById('totalLabUnits');
+        const existingStudentNumber = document.getElementById('existingStudentNumber');
+        const programType = document.getElementById('programType');
 
-    function filterSubjects() {
-        const yearLevel = yearLevelSelect.value;
-        const semester = semesterSelect.value;
+        function filterSubjects() {
+            const yearLevel = yearLevelSelect.value;
+            const semester = semesterSelect.value;
 
-        subjectSelects.forEach(select => {
-            const options = select.options;
-            for (let i = 0; i < options.length; i++) {
-                const option = options[i];
-                const year = option.getAttribute('data-year');
-                const sem = option.getAttribute('data-semester');
-                if ((year === yearLevel || yearLevel === "") && (sem === semester || semester === "")) {
-                    option.style.display = "block";
-                } else {
-                    option.style.display = "none";
+            subjectSelects.forEach(select => {
+                const options = select.options;
+                for (let i = 0; i < options.length; i++) {
+                    const option = options[i];
+                    const year = option.getAttribute('data-year');
+                    const sem = option.getAttribute('data-semester');
+                    if ((year === yearLevel || yearLevel === "") && (sem === semester || semester === "")) {
+                        option.style.display = "block";
+                    } else {
+                        option.style.display = "none";
+                    }
                 }
-            }
-        });
-    }
-
-    function updateTotalUnits() {
-        let totalLec = 0;
-        let totalLab = 0;
-
-        subjectSelects.forEach(select => {
-            const selectedOption = select.options[select.selectedIndex];
-            if (selectedOption.value) {
-                totalLec += parseInt(selectedOption.getAttribute('data-lec-units')) || 0;
-                totalLab += parseInt(selectedOption.getAttribute('data-lab-units')) || 0;
-            }
-        });
-
-        totalLecUnits.value = totalLec;
-        totalLabUnits.value = totalLab;
-    }
-
-    yearLevelSelect.addEventListener('change', filterSubjects);
-    semesterSelect.addEventListener('change', filterSubjects);
-
-    subjectSelects.forEach(select => {
-        select.addEventListener('change', function () {
-            const lectureInput = this.closest('.form-group.row').querySelector('.lecture-hours');
-            const labInput = this.closest('.form-group.row').querySelector('.lab-hours');
-            const selectedOption = this.options[this.selectedIndex];
-
-            if (selectedOption.value) {
-                lectureInput.value = selectedOption.getAttribute('data-lec-units');
-                labInput.value = selectedOption.getAttribute('data-lab-units');
-            } else {
-                lectureInput.value = '';
-                labInput.value = '';
-            }
-
-            updateTotalUnits();
-        });
-
-        // Trigger initial update for existing student
-        const initialSelectedOption = select.options[select.selectedIndex];
-        if (initialSelectedOption.value) {
-            const lectureInput = select.closest('.form-group.row').querySelector('.lecture-hours');
-            const labInput = select.closest('.form-group.row').querySelector('.lab-hours');
-            
-            lectureInput.value = initialSelectedOption.getAttribute('data-lec-units');
-            labInput.value = initialSelectedOption.getAttribute('data-lab-units');
-        }
-    });
-
-    // Initialize total units for existing student
-    updateTotalUnits();
-
-    document.getElementById('enrollmentForm').addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        // Determine the full program name
-        const program = existingStudentNumber ? 
-            (programType.value === 'CS' ? 'BS Computer Science' : 'BS Information Technology') : 
-            document.getElementById('programSelect').value;
-
-        // If updating an existing enrollment
-        if (existingStudentNumber) {
-            // Batch update subjects with their details
-            const subjectUpdates = [];
-            
-            for (let i = 1; i <= 9; i++) {
-                const subjectSelect = document.getElementById(`category${i}`);
-                const lectureInput = document.getElementById(`lec${i}`);
-                const labInput = document.getElementById(`lab${i}`);
-                
-                if (subjectSelect.value) {
-                    subjectUpdates.push(
-                        fetch('/update_student_subject/', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRFToken': getCookie('csrftoken')
-                            },
-                            body: JSON.stringify({
-                                student_number: existingStudentNumber.value,
-                                subject_index: i - 1,  // 0-based index
-                                new_subject: subjectSelect.value,
-                                program: program,
-                                lecture_hours: lectureInput.value,
-                                lab_hours: labInput.value
-                            })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (!data.success) {
-                                alert(`Failed to update subject ${i}: ${data.message}`);
-                                throw new Error(data.message);
-                            }
-                            return data;
-                        })
-                    );
-                }
-            }
-
-            // Wait for all updates to complete
-            Promise.all(subjectUpdates)
-                .then(() => {
-                    alert('All subjects updated successfully!');
-                    window.location.href = "{% url 'enroll-students-sub' %}";
-                })
-                .catch(error => {
-                    console.error('Error in subject updates:', error);
-                    alert('Failed to update all subjects. Please try again.');
-                });
-        } else {
-            // New enrollment submission - existing code
-            const subjects = [];
-            for (let i = 1; i <= 9; i++) {
-                const subjectSelect = document.getElementById(`category${i}`);
-                if (subjectSelect.value) {
-                    subjects.push(subjectSelect.value);
-                }
-            }
-
-            const payload = {
-                program_type: document.getElementById('programSelect').value,
-                enrollment_data: {
-                    student_number: document.getElementById('studentInput').value,
-                    sub1: subjects[0] || '',
-                    sub2: subjects[1] || '',
-                    sub3: subjects[2] || '',
-                    sub4: subjects[3] || '',
-                    sub5: subjects[4] || '',
-                    sub6: subjects[5] || '',
-                    sub7: subjects[6] || '',
-                    sub8: subjects[7] || '',
-                    sub9: subjects[8] || '',
-                    total_units: parseInt(totalLecUnits.value) + parseInt(totalLabUnits.value)
-                }
-            };
-
-            // Existing new enrollment submission code
-            fetch('/enroll-students-sub/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Enrollment successful!');
-                    window.location.href = "{% url 'enroll-students-sub' %}";
-                } else {
-                    alert('Operation failed: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred during the operation.');
             });
         }
+
+
+
+        function updateTotalUnits() {
+            let totalLec = 0;
+            let totalLab = 0;
+
+            subjectSelects.forEach(select => {
+                const selectedOption = select.options[select.selectedIndex];
+                if (selectedOption.value) {
+                    totalLec += parseInt(selectedOption.getAttribute('data-lec-units')) || 0;
+                    totalLab += parseInt(selectedOption.getAttribute('data-lab-units')) || 0;
+                }
+            });
+
+            totalLecUnits.value = totalLec;
+            totalLabUnits.value = totalLab;
+        }
+
+        yearLevelSelect.addEventListener('change', filterSubjects);
+        semesterSelect.addEventListener('change', filterSubjects);
+
+        subjectSelects.forEach(select => {
+            select.addEventListener('change', function () {
+                const lectureInput = this.closest('.form-group.row').querySelector('.lecture-hours');
+                const labInput = this.closest('.form-group.row').querySelector('.lab-hours');
+                const selectedOption = this.options[this.selectedIndex];
+
+                if (selectedOption.value) {
+                    lectureInput.value = selectedOption.getAttribute('data-lec-units');
+                    labInput.value = selectedOption.getAttribute('data-lab-units');
+                } else {
+                    lectureInput.value = '';
+                    labInput.value = '';
+                }
+
+                updateTotalUnits();
+            });
+
+            // Trigger initial update for existing student
+            const initialSelectedOption = select.options[select.selectedIndex];
+            if (initialSelectedOption.value) {
+                const lectureInput = select.closest('.form-group.row').querySelector('.lecture-hours');
+                const labInput = select.closest('.form-group.row').querySelector('.lab-hours');
+
+                lectureInput.value = initialSelectedOption.getAttribute('data-lec-units');
+                labInput.value = initialSelectedOption.getAttribute('data-lab-units');
+            }
+        });
+
+        // Initialize total units for existing student
+        updateTotalUnits();
+
+        document.getElementById('enrollmentForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Determine the full program name
+            const program = existingStudentNumber ?
+                (programType.value === 'CS' ? 'BS Computer Science' : 'BS Information Technology') :
+                document.getElementById('programSelect').value;
+
+            // If updating an existing enrollment
+            if (existingStudentNumber) {
+                // Batch update subjects with their details
+                const subjectUpdates = [];
+
+                for (let i = 1; i <= 9; i++) {
+                    const subjectSelect = document.getElementById(`category${i}`);
+                    const lectureInput = document.getElementById(`lec${i}`);
+                    const labInput = document.getElementById(`lab${i}`);
+
+                    if (subjectSelect.value) {
+                        subjectUpdates.push(
+                            fetch('/update_student_subject/', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': getCookie('csrftoken')
+                                },
+                                body: JSON.stringify({
+                                    student_number: existingStudentNumber.value,
+                                    subject_index: i - 1,  // 0-based index
+                                    new_subject: subjectSelect.value,
+                                    program: program,
+                                    lecture_hours: lectureInput.value,
+                                    lab_hours: labInput.value
+                                })
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (!data.success) {
+                                        alert(`Failed to update subject ${i}: ${data.message}`);
+                                        throw new Error(data.message);
+                                    }
+                                    return data;
+                                })
+                        );
+                    }
+                }
+
+                // Wait for all updates to complete
+                Promise.all(subjectUpdates)
+                    .then(() => {
+                        alert('All subjects updated successfully!');
+                        window.location.href = "{% url 'enroll-students-sub' %}";
+                    })
+                    .catch(error => {
+                        console.error('Error in subject updates:', error);
+                        alert('Failed to update all subjects. Please try again.');
+                    });
+            } else {
+                // New enrollment submission - existing code
+                const subjects = [];
+                for (let i = 1; i <= 9; i++) {
+                    const subjectSelect = document.getElementById(`category${i}`);
+                    if (subjectSelect.value) {
+                        subjects.push(subjectSelect.value);
+                    }
+                }
+
+                const payload = {
+                    program_type: document.getElementById('programSelect').value,
+                    enrollment_data: {
+                        student_number: document.getElementById('studentInput').value,
+                        sub1: subjects[0] || '',
+                        sub2: subjects[1] || '',
+                        sub3: subjects[2] || '',
+                        sub4: subjects[3] || '',
+                        sub5: subjects[4] || '',
+                        sub6: subjects[5] || '',
+                        sub7: subjects[6] || '',
+                        sub8: subjects[7] || '',
+                        sub9: subjects[8] || '',
+                        total_units: parseInt(totalLecUnits.value) + parseInt(totalLabUnits.value)
+                    }
+                };
+
+                // Existing new enrollment submission code
+                fetch('/enroll-students-sub/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify(payload)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Enrollment successful!');
+                            window.location.href = "{% url 'enroll-students-sub' %}";
+                        } else {
+                            alert('Operation failed: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred during the operation.');
+                    });
+            }
+        });
+
+        document.querySelectorAll('.remove-subject').forEach(button => {
+        button.addEventListener('click', function() {
+            const subjectIndex = this.getAttribute('data-subject-index');
+            const select = document.getElementById(`category${subjectIndex}`);
+            const lectureInput = document.getElementById(`lec${subjectIndex}`);
+            const labInput = document.getElementById(`lab${subjectIndex}`);
+            
+            if (confirm('Are you sure you want to remove this subject?')) {
+                // Send request to remove subject
+                fetch('/update_student_subject/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        student_number: document.getElementById('existingStudentNumber').value,
+                        subject_index: parseInt(subjectIndex) - 1,  // Convert to 0-based index
+                        new_subject: '',  // Empty string indicates removal
+                        program: document.getElementById('programType').value === 'CS' ? 
+                            'BS Computer Science' : 'BS Information Technology',
+                        lecture_hours: 0,
+                        lab_hours: 0
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Clear the select and inputs
+                        select.value = '';
+                        lectureInput.value = '';
+                        labInput.value = '';
+                        updateTotalUnits();
+                        alert('Subject removed successfully!');
+                    } else {
+                        alert('Failed to remove subject: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while removing the subject.');
+                });
+            }
+        });
     });
 
-    // Utility function to get CSRF token from cookies
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+
+        // Utility function to get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
                 }
             }
+            return cookieValue;
         }
-        return cookieValue;
-    }
-});
+    });
 
 </script>
 {% endblock %}

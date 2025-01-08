@@ -30,11 +30,14 @@
     </div>
     <div style="border-bottom: 2px solid #000000;  border-right: 2px solid #000000; border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); background-color:rgba(255, 255, 255, 1);
-    width: 500px; height: 50px; margin-left: auto;  margin-right: auto; position: relative; top: -50px;">
+    width: 500px; height: 70px; margin-left: auto;  margin-right: auto; position: relative; top: -50px;">
         <div class="form-group">
             <p class="text-muted ml-3" style="position: relative; bottom: -10px; color: #000 !important;">Don't have an
-                account yet? <a href="{% url 'register' %}">Sign Up</a>
+                account yet? <a href="{% url 'register' %}" style="color: #007bff; text-decoration: underline;">Sign Up</a>
             </p>
+        </div>
+        <div style="text-align: center;">
+            <a href="{% url 'password_reset' %}" style="color: #007bff; text-decoration: underline;">Forgot Password?</a>
         </div>
     </div>
 </div>

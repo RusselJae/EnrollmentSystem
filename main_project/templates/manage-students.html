@@ -9,7 +9,7 @@
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="{% url 'dashboard1' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Home</a></li>
                     <li class="breadcrumb-item active">Manage Students</li>
                 </ol>
             </div>
@@ -93,9 +93,9 @@
                                         <span class="badge badge-success">
                                             Enrolled on {{ student.date_enrolled }}
                                         </span>
-                                    {% else %}
+                                        {% else %}
                                         <span class="badge badge-danger">Not Enrolled</span>
-                                    {% endif %}
+                                        {% endif %}
                                     </td>
                                     <td>
                                         <div class="btn-group" role="group">
@@ -114,11 +114,11 @@
                                                 <i class="fas fa-user-plus"></i> Enroll
                                                 </a>
                                             {% endif %}
-                                            <form method="post" action="{% url 'delete_student' student.id %}"
+                                            <form method="post" action="{% url 'archive_student' program=student.program student_id=student.id %}"
                                                 style="display:inline;" onsubmit="return confirmDelete();">
                                                 {% csrf_token %}
                                                 <button type="submit" class="btn btn-sm btn-danger">
-                                                    <i class="fas fa-trash"></i> Remove
+                                                    <i class="fas fa-trash"></i> Archive
                                                 </button>
                                             </form>
                                         </div>
@@ -156,7 +156,7 @@
 </section>
 <script type="text/javascript">
 function confirmDelete() { 
-    return confirm("Are you sure you want to delete this student?"); 
+    return confirm("Are you sure you want to archive this student?"); 
 }
 </script>
 {% endblock %}

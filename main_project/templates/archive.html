@@ -1,0 +1,169 @@
+{% extends 'base4.html' %}
+{% load custom_filters %}
+{% block content %}
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Archive Students</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Home</a></li>
+                    <li class="breadcrumb-item active">Archive Students</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-primary">
+                    <div class="card-header" style="background-color: #165319; text-align: center;">
+                        <h3 class="card-title">Manage Student Information and Subjects</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <form method="get" class="form-inline">
+                                    <div class="input-group mr-2 mb-2">
+                                        <input type="text" name="search" class="form-control" 
+                                               placeholder="Search by Student Number or Name" 
+                                               value="{{ request.GET.search }}">
+                                        <div class="input-group-append">
+                                            <button type="submit" class="btn btn-success">
+                                                <i class="fas fa-search"></i> Search
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <select name="program" class="form-control mr-2">
+                                        <option value="">Select Program</option>
+                                        {% for value, label in program_choices %}
+                                        <option value="{{ value }}" {% if value == selected_program %}selected{% endif %}>
+                                            {{ label }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-check ml-2">
+                                        <input type="checkbox" name="show_archived" class="form-check-input" id="showArchived" 
+                                        {% if request.GET.show_archived %}checked{% endif %}>
+                                        <label class="form-check-label" for="showArchived">Show Archived Students</label>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <table id="studentsTable" class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>S.NO</th>
+                                    <th>Student Number</th>
+                                    <th>Full Name</th>
+                                    <th>Program</th>
+                                    <th>Year Level</th>
+                                    <th>Section</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in students %}
+                                <tr {% if student.is_archived %}class="table-secondary text-muted"{% endif %}>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ student.student_number }}</td>
+                                    <td>
+                                        {{ student.first_name }}
+                                        {{ student.middle_name|default_if_none:'' }}
+                                        {{ student.last_name }}
+                                        {{ student.suffix|default_if_none:'' }}
+                                    </td>
+                                    <td>{{ student.program }}</td>
+                                    <td>{{ student.year_level }}</td>
+                                    <td>{{ student.section }}</td>
+                                    <td>
+                                        {% if student.date_enrolled and student.date_enrolled != 'None' %}
+                                        <span class="badge badge-success">
+                                            Enrolled on {{ student.date_enrolled }}
+                                        </span>
+                                        {% else %}
+                                        <span class="badge badge-danger">Not Enrolled</span>
+                                        {% endif %}
+                                    </td>
+                                        <td>
+                                            {% if student.is_archived %}
+                                                <form method="post" action="{% url 'restore_student' program=student.program student_id=student.id %}">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-sm btn-primary">
+                                                        <i class="fas fa-undo"></i> Restore
+                                                    </button>
+                                                </form>
+                                            {% else %}
+                                                <form method="post" action="{% url 'archive_student' program=student.program student_id=student.id %}">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-sm btn-danger">
+                                                        <i class="fas fa-archive"></i> Archive
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                            </tbody>
+                        </table>
+
+                        <div class="pagination">
+                            <ul class="pagination justify-content-center">
+                                {% if students.has_previous %}
+                                <li class="page-item"><a class="page-link" href="?page=1{% if request.GET.program %}&program={{ request.GET.program }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.show_archived %}&show_archived=on{% endif %}">&laquo; First</a></li>
+                                <li class="page-item"><a class="page-link"
+                                        href="?page={{ students.previous_page_number }}{% if request.GET.program %}&program={{ request.GET.program }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.show_archived %}&show_archived=on{% endif %}">Previous</a></li>
+                                {% endif %}
+
+                                <li class="page-item disabled"><span class="page-link">
+                                        Page {{ students.number }} of {{ students.paginator.num_pages }}
+                                    </span></li>
+
+                                {% if students.has_next %}
+                                <li class="page-item"><a class="page-link"
+                                        href="?page={{ students.next_page_number }}{% if request.GET.program %}&program={{ request.GET.program }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.show_archived %}&show_archived=on{% endif %}">Next</a></li>
+                                <li class="page-item"><a class="page-link"
+                                        href="?page={{ students.paginator.num_pages }}{% if request.GET.program %}&program={{ request.GET.program }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.show_archived %}&show_archived=on{% endif %}">Last &raquo;</a></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script type="text/javascript">
+function confirmAction(action) { 
+    return confirm(`Are you sure you want to ${action} this student?`); 
+}
+
+// Add event listener to show archived checkbox
+document.addEventListener('DOMContentLoaded', function() {
+    const showArchivedCheckbox = document.getElementById('showArchived');
+    const form = showArchivedCheckbox.closest('form');
+    
+    showArchivedCheckbox.addEventListener('change', function() {
+        form.submit();
+    });
+});
+</script>
+{% endblock %}
