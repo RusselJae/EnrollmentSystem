@@ -5,12 +5,7 @@ from django.forms import ValidationError
 from django.utils import timezone
 from django.contrib.auth.models import User
 
-
-
-
-
 class AppCsStudents(models.Model):
-    # Directly define fields without inheritance to match existing database structure
     first_name = models.CharField(max_length=100)
     middle_name = models.CharField(max_length=100, blank=True, null=True)
     last_name = models.CharField(max_length=100)
@@ -86,7 +81,6 @@ class AppCsStudents(models.Model):
         """
         Validate program selection
         """
-        # Ensure program is selected from the predefined choices
         if self.program not in dict(self.PROGRAM_CHOICES):
             raise ValidationError({
                 'program': 'Invalid program selected. Please choose from the available options.'
@@ -126,7 +120,6 @@ class AppCsStudents(models.Model):
         return f"{self.first_name} {self.last_name} (CS - {self.student_number})"
 
 class AppItStudents(models.Model):
-    # Directly define fields without inheritance to match existing database structure
     first_name = models.CharField(max_length=100)
     middle_name = models.CharField(max_length=100, blank=True, null=True)
     last_name = models.CharField(max_length=100)

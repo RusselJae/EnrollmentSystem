@@ -2,10 +2,9 @@ import json
 from django.http import HttpResponseRedirect
 from django.test import TestCase, Client
 from django.core.exceptions import ValidationError
-from django.urls import reverse
-from django.utils import timezone
 from datetime import date
-from .models import AppCsStudents
+from datetime import datetime
+from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
 from .forms import UserRegisterForm
@@ -18,7 +17,7 @@ from django.contrib.auth.views import LoginView
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.contrib.auth import get_user_model
-from datetime import date
+from django.test import override_settings
 
 
 # Create your tests here.
@@ -111,6 +110,10 @@ class CustomLoginViewTest(TestCase):
         
         self.assertEqual(response.status_code, 200)  # Stays on login page
         self.assertTrue(response.context['form'].errors)  # Should have form errors
+        
+    def tearDown(self):
+        # Clean up created users
+        User.objects.all().delete()
 
     # def test_already_logged_in_user(self):
     #     """Test that already logged in users are redirected appropriately"""
@@ -132,9 +135,7 @@ class CustomLoginViewTest(TestCase):
     #     # Expect redirect to admin dashboard
     #     self.assertRedirects(response, self.admin_dashboard_url, status_code=302, target_status_code=200)
 
-    def tearDown(self):
-        # Clean up created users
-        User.objects.all().delete()
+
         
 
 class RegisterViewTests(TestCase):
@@ -554,7 +555,7 @@ class CorViewTest(TestCase):
         self.assertEqual(subject['sched'], 'TBA')
 
 
-class AdminDashboardTest(TestCase):
+class AdminDashboardViewTest(TestCase):
     def setUp(self):
         # Create superuser
         self.superuser = User.objects.create_superuser(
@@ -748,13 +749,6 @@ class AdminDashboardTest(TestCase):
         self.assertEqual(context['irregular_students'], 0)
         
         
-from django.test import TestCase, Client
-from django.urls import reverse
-from django.contrib.auth.models import User
-from django.utils import timezone
-from datetime import datetime
-from .models import AppCsStudents, AppItStudents
-from django.core.exceptions import ValidationError
 
 class AddStudentsViewTests(TestCase):
     def setUp(self):
@@ -1142,7 +1136,7 @@ class ManageStudentsViewTests(TestCase):
         response = self.client.get(reverse('manage-students'), {'page': 2})
         self.assertTrue(len(list(response.context['students'])) > 0)
         
-class EnrollmentTestCase(TestCase):
+class EnrollmentStatusViewTest(TestCase):
     def setUp(self):
         # Create superuser for authentication
         self.superuser = User.objects.create_superuser(
@@ -1377,7 +1371,7 @@ class EnrollmentTestCase(TestCase):
         
         
 
-class StudentManagementTests(TestCase):
+class StudentSuvjectsTests(TestCase):
     def setUp(self):
         # Create superuser for authentication
         self.superuser = User.objects.create_superuser(
@@ -1636,19 +1630,6 @@ class StudentManagementTests(TestCase):
         self.assertEqual(response.status_code, 302) 
         
 
-
-from django.test import TestCase, Client
-from django.urls import reverse
-from django.contrib.auth.models import User
-from datetime import date
-from .models import (
-    AppCsStudents, 
-    AppItStudents, 
-    AppCsStudentsSub, 
-    AppItStudentsSub,
-    AppSub
-)
-
 class SearchCorViewTests(TestCase):
     def setUp(self):
         # Create admin user
@@ -1793,7 +1774,7 @@ class SearchCorViewTests(TestCase):
         self.assertContains(response, 'Doe')
         
         
-class ArchiveViewsTest(TestCase):
+class ArchiveViewTest(TestCase):
     def setUp(self):
         # Create superuser
         self.superuser = User.objects.create_superuser(
@@ -1959,3 +1940,136 @@ class ArchiveViewsTest(TestCase):
             'program': 'BS Information Technology'
         }))
         self.assertEqual(response.status_code, 302)
+        
+
+
+class SectionsViewTest(TestCase):
+    def setUp(self):
+        # Create a superuser for testing
+        self.superuser = User.objects.create_superuser(
+            username='admin',
+            email='admin@test.com',
+            password='adminpass123'
+        )
+        self.client = Client()
+        
+        # Create test data for CS students
+        AppCsStudents.objects.create(
+            first_name="John",
+            last_name="Doe",
+            birthdate="2000-01-01",
+            age=20,
+            gender="male",
+            mobile_number="12345678901",
+            email="john@test.com",
+            student_number="202000001",
+            program="BS Computer Science",
+            status="regular",
+            year_level="1",
+            section="A",
+            soc_fee="paid",
+            address="Test Address"
+        )
+        
+        AppCsStudents.objects.create(
+            first_name="Jane",
+            last_name="Doe",
+            birthdate="2000-01-01",
+            age=20,
+            gender="female",
+            mobile_number="12345678902",
+            email="jane@test.com",
+            student_number="202000002",
+            program="BS Computer Science",
+            status="irregular",
+            year_level="2",
+            section="B",
+            soc_fee="paid",
+            address="Test Address"
+        )
+        
+        # Create test data for IT students
+        AppItStudents.objects.create(
+            first_name="Bob",
+            last_name="Smith",
+            birthdate="2000-01-01",
+            age=20,
+            gender="male",
+            mobile_number="12345678903",
+            email="bob@test.com",
+            student_number="202000003",
+            program="BS Information Technology",
+            status="regular",
+            year_level="1",
+            section="A",
+            soc_fee="paid",
+            address="Test Address"
+        )
+
+    # def test_login_required(self):
+    #     """Test that the view requires login"""
+    #     response = self.client.get(reverse('sections'))
+    #     self.assertEqual(response.status_code, 302)  # Should redirect to login
+    #     self.assertTrue(response.url.startswith('/login'))
+
+    def test_superuser_required(self):
+        """Test that the view requires superuser status"""
+        # Create regular user
+        regular_user = User.objects.create_user(
+            username='regular',
+            password='regular123'
+        )
+        self.client.login(username='regular', password='regular123')
+        
+        response = self.client.get(reverse('sections'))
+        self.assertEqual(response.status_code, 302)  # Should redirect
+
+    def test_successful_access(self):
+        """Test successful access by superuser"""
+        self.client.login(username='admin', password='adminpass123')
+        response = self.client.get(reverse('sections'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_context_data(self):
+        """Test that all expected context data is present and correct"""
+        self.client.login(username='admin', password='adminpass123')
+        response = self.client.get(reverse('sections'))
+        
+        # Test total counts
+        self.assertEqual(response.context['cs_student_count'], 2)
+        self.assertEqual(response.context['it_student_count'], 1)
+        
+        # Test enrolled students count
+        self.assertEqual(response.context['cs_enrolled_students'], 1)
+        self.assertEqual(response.context['it_enrolled_students'], 1)
+        
+        # Test enrollment breakdown
+        cs_breakdown = list(response.context['cs_enrollment_breakdown'])
+        self.assertEqual(len(cs_breakdown), 2)  # Should have two different year/section combinations
+        
+        it_breakdown = list(response.context['it_enrollment_breakdown'])
+        self.assertEqual(len(it_breakdown), 1)  # Should have one year/section combination
+        
+        # Test status breakdown
+        cs_status = {item['status']: item['student_count'] 
+                    for item in response.context['cs_status_breakdown']}
+        self.assertEqual(cs_status['regular'], 1)
+        self.assertEqual(cs_status['irregular'], 1)
+        
+        it_status = {item['status']: item['student_count'] 
+                    for item in response.context['it_status_breakdown']}
+        self.assertEqual(it_status['regular'], 1)
+
+    def test_empty_database(self):
+        """Test view behavior with empty database"""
+        # Clear all student records
+        AppCsStudents.objects.all().delete()
+        AppItStudents.objects.all().delete()
+        
+        self.client.login(username='admin', password='adminpass123')
+        response = self.client.get(reverse('sections'))
+        
+        self.assertEqual(response.context['cs_student_count'], 0)
+        self.assertEqual(response.context['it_student_count'], 0)
+        self.assertEqual(response.context['cs_enrolled_students'], 0)
+        self.assertEqual(response.context['it_enrolled_students'], 0)
