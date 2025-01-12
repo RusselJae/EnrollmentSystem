@@ -24,6 +24,7 @@ urlpatterns = [
     path('enrolled/', views.enrolled, name='enrolled'),
     path('admin_dashboard/',views.admin_dashboard,name="admin_dashboard"),
     path('checklist/',views.checklist,name="checklist"),
+    path('search_checklist/',views.search_checklist,name="search_checklist"),
     path('register/',views.register,name="register"),
     path('profile/', views.profile, name='profile'),
     # path('', auth_view.LoginView.as_view(template_name='login.html'), name="login"),

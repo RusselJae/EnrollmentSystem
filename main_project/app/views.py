@@ -10,7 +10,7 @@ from django.contrib.admin import AdminSite
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import logout
 from django.http import Http404, HttpResponseRedirect
-from .models import AppCsStudents, AppCsStudentsSub, AppItStudents, AppItStudentsSub, AppSub
+from .models import AppCsStudents, AppCsStudentsSub, AppItStudents, AppItStudentsSub, AppSub, AppCsChecklist, AppItChecklist
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .forms import StudentUpdateForm, UserRegisterForm
 from django.contrib import messages
@@ -33,6 +33,9 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.hashers import check_password
 from django.core.files.storage import FileSystemStorage
 import os
+from django.template.defaultfilters import register
+from django.db import models
+from django.core.exceptions import ObjectDoesNotExist
 
 
 def base4(request):
@@ -1217,7 +1220,68 @@ def search_cor(request):
 
 
 def checklist(request):
-    return render(request, "checklist.html")
+    student = None
+    subjects = AppSub.objects.all().order_by('year_level', 'semester', 'id')
+    checklist_data = None
+    error_message = None
+    
+    # Get current user's email
+    user_email = request.user.email if request.user.is_authenticated else None
+    
+    if user_email:
+        # Try to find student by email
+        try:
+            # Try CS database first
+            student = AppCsStudents.objects.get(email=user_email)
+            try:
+                checklist_data = AppCsChecklist.objects.get(student_number=student.student_number)
+            except AppCsChecklist.DoesNotExist:
+                error_message = 'No grade records found for this student.'
+                checklist_data = AppCsChecklist(student_number=student.student_number)
+                for field in AppCsChecklist._meta.fields:
+                    if isinstance(field, models.DecimalField):
+                        setattr(checklist_data, field.name, None)
+                checklist_data.save()
+                
+        except AppCsStudents.DoesNotExist:
+            try:
+                # Try IT database if not found in CS
+                student = AppItStudents.objects.get(email=user_email)
+                try:
+                    checklist_data = AppItChecklist.objects.get(student_number=student.student_number)
+                except AppItChecklist.DoesNotExist:
+                    error_message = 'No grade records found for this student.'
+                    checklist_data = AppItChecklist(student_number=student.student_number)
+                    for field in AppItChecklist._meta.fields:
+                        if isinstance(field, models.DecimalField):
+                            setattr(checklist_data, field.name, None)
+                    checklist_data.save()
+                    
+            except AppItStudents.DoesNotExist:
+                error_message = 'No student record found for your email address.'
+    else:
+        error_message = 'Please log in to view your grades.'
+    
+    # Handle POST request (grade submission) - only for staff
+    if request.method == 'POST' and request.user.is_staff:
+        student_number = request.POST.get('student_number')
+        try:
+            # Rest of your existing POST handling code...
+            # [Previous POST handling code remains unchanged]
+            pass
+            
+        except (AppCsStudents.DoesNotExist, AppItStudents.DoesNotExist) as e:
+            messages.error(request, 'Error saving grades: Student not found')
+            return redirect('checklist')
+
+    context = {
+        'student': student,
+        'subjects': subjects,
+        'checklist': checklist_data,
+        'error_message': error_message
+    }
+    
+    return render(request, 'checklist.html', context)
 
 @login_required
 @user_passes_test(is_superuser)
@@ -1467,3 +1531,150 @@ def get_student_model(program):
     elif program == 'BS Information Technology':
         return AppItStudents
     return None
+
+
+def search_checklist(request):
+    student = None
+    subjects = AppSub.objects.all().order_by('year_level', 'semester', 'id')
+    checklist_data = None
+    error_message = None
+    
+    # Handle GET request (search)
+    if 'student_number' in request.GET:
+        student_number = request.GET.get('student_number')
+        try:
+            # Try CS database first
+            student = AppCsStudents.objects.get(student_number=student_number)
+            # Try to get checklist or create new one
+            try:
+                checklist_data = AppCsChecklist.objects.get(student_number=student_number)
+            except AppCsChecklist.DoesNotExist:
+                # Create new checklist with default values
+                checklist_data = AppCsChecklist(student_number=student_number)
+                # Set default values for all grade fields to None or 0
+                for field in AppCsChecklist._meta.fields:
+                    if isinstance(field, models.DecimalField):
+                        setattr(checklist_data, field.name, None)
+                checklist_data.save()
+                
+        except AppCsStudents.DoesNotExist:
+            try:
+                # Try IT database if not found in CS
+                student = AppItStudents.objects.get(student_number=student_number)
+                # Try to get checklist or create new one
+                try:
+                    checklist_data = AppItChecklist.objects.get(student_number=student_number)
+                except AppItChecklist.DoesNotExist:
+                    # Create new checklist with default values
+                    checklist_data = AppItChecklist(student_number=student_number)
+                    # Set default values for all grade fields to None or 0
+                    for field in AppItChecklist._meta.fields:
+                        if isinstance(field, models.DecimalField):
+                            setattr(checklist_data, field.name, None)
+                    checklist_data.save()
+                    
+            except AppItStudents.DoesNotExist:
+                error_message = 'Student not found'
+    
+    # Handle POST request (grade submission)
+    if request.method == 'POST' and request.user.is_staff:
+        student_number = request.POST.get('student_number')
+        try:
+            # Determine if CS or IT student and get appropriate models
+            try:
+                student = AppCsStudents.objects.get(student_number=student_number)
+                checklist_data = AppCsChecklist.objects.get(student_number=student_number)
+                is_cs = True
+            except AppCsStudents.DoesNotExist:
+                student = AppItStudents.objects.get(student_number=student_number)
+                checklist_data = AppItChecklist.objects.get(student_number=student_number)
+                is_cs = False
+            
+            # Update grades
+            updated = False
+            for field_name, value in request.POST.items():
+                if field_name.endswith('_grade'):
+                    # Extract the original subject code from the field name and format it properly
+                    subject_code = field_name.replace('_grade', '').upper()
+                    # Add space between letters and numbers
+                    import re
+                    subject_code = re.sub(r'(\d+)', r' \1', subject_code)
+                    # Handle special cases like "CvSU"
+                    if subject_code == "CVSU 101":
+                        subject_code = "CvSU 101"
+                    
+                    # Convert to the database field name format
+                    db_field = subject_code.lower().replace(' ', '_')
+                    
+                    if hasattr(checklist_data, db_field):
+                        try:
+                            if value.strip() == '':  # Handle empty values
+                                setattr(checklist_data, db_field, None)
+                                updated = True
+                            else:
+                                grade = float(value)
+                                if 0 <= grade <= 5:  # Validate grade range
+                                    setattr(checklist_data, db_field, grade)
+                                    updated = True
+                                else:
+                                    messages.error(request, f'Invalid grade value for {subject_code}. Must be between 0 and 5.')
+                        except ValueError:
+                            messages.error(request, f'Invalid grade format for {subject_code}')
+                    else:
+                        messages.warning(request, f'Field {subject_code} not found in checklist')
+            
+            if updated:
+                checklist_data.save()
+                messages.success(request, 'Grades have been saved successfully!')
+            else:
+                messages.warning(request, 'No changes were made to save.')
+            
+            # Redirect to maintain the search parameter
+            return redirect(f'{request.path}?student_number={student_number}')
+            
+        except (AppCsStudents.DoesNotExist, AppItStudents.DoesNotExist) as e:
+            messages.error(request, 'Error saving grades: Student not found')
+            return redirect('checklist')
+
+    context = {
+        'student': student,
+        'subjects': subjects,
+        'checklist': checklist_data,
+        'error_message': error_message
+    }
+    
+    return render(request, 'search_checklist.html', context)
+
+# Add this custom template filter to your templatetags
+# @register.filter
+# def get_grade(checklist, subject_code):
+#     """
+#     Get the grade for a specific subject from the checklist
+#     """
+#     if not checklist:
+#         return ""
+    
+#     field_name = subject_code.replace(' ', '_').lower()
+#     return getattr(checklist, field_name, "")
+
+
+
+# def get_grade(checklist, subject_code):
+#     if not checklist:
+#         return ''
+        
+#     # Convert subject code to match model field name
+#     field_name = subject_code.lower().replace(' ', '_')
+    
+#     try:
+#         return getattr(checklist, field_name, '')
+#     except AttributeError:
+#         return ''
+
+# def get_cs_subjects(student_number):
+#     # Add your logic to fetch CS subjects
+#     return Subject.objects.filter(student_number=student_number)
+
+# def get_it_subjects(student_number):
+#     # Add your logic to fetch IT subjects
+#     return Subject.objects.filter(student_number=student_number)

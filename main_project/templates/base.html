@@ -26,8 +26,7 @@
 
   @media print {
 
-    #printButton,
-    form {
+    #printButton {
       display: none;
     }
 
@@ -37,7 +36,6 @@
       background-color: #fff;
       background-image: none !important;
     }
-
 
     .content-header,
     .breadcrumb {
@@ -181,6 +179,10 @@
           <li class="nav-item">
             <a class="nav-link {% if request.resolver_match.url_name == 'cor' %}active{% endif %}"
               href="{% url 'cor' %}">COR</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'checklist' %}active{% endif %}"
+              href="{% url 'checklist' %}">Checklist</a>
           </li>
         </ul>
       </div>

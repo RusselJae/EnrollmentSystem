@@ -67,6 +67,12 @@
               </a>
             </li>
             <li class="nav-item">
+              <a href="{% url 'search_checklist' %}" class="nav-link {% if request.resolver_match.url_name == 'search_checklist' %}active{% endif %} ">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Checklist</p>
+              </a>
+            </li>
+            <li class="nav-item">
               <a href="{% url 'enroll-students-sub' %}" class="nav-link {% if request.resolver_match.url_name == 'enroll-students-sub' %}active{% endif %}">
                 <i class="far fa-circle nav-icon"></i>
                 <p>Enroll Subjects</p>

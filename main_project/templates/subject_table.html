@@ -1,0 +1,64 @@
+<!-- subject_table.html -->
+{% load custom_filters %}
+<!-- <table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Course Code</th>
+            <th>Course Title</th>
+            <th>Credit Units Lab</th>
+            <th>Credit Units Lab</th>
+            <th>Pre-Requisite</th>
+            <th>Semester</th>
+            <th>Final Grade</th>
+            <th>Professor/Instructor</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for subject in subjects %}
+            {% if subject.year_level|stringformat:"s" == year and subject.semester|stringformat:"s" == semester %}
+                {% if student.program == 'BS Computer Science' and subject.cs == 'yes' %}
+                    <tr>
+                        <td>{{ subject.sub_code }}</td>
+                        <td>{{ subject.sub_name }}</td>
+                        <td>{{ subject.lab_units }}</td>
+                        <td>{{ subject.lec_units }}</td>
+                        <td>{{ subject.prerequisite }}</td>
+                        <td></td>
+                        <td>
+                            <input type="number" 
+                                   step="0.01" 
+                                   min="0" 
+                                   max="5" 
+                                   class="form-control" 
+                                   name="{{ subject.sub_code|cut:" "|lower }}_grade"
+                                   value="{{ checklist|get_grade:subject.sub_code }}"
+                                   {% if not request.user.is_staff %}disabled{% endif %}>
+                        </td>
+                        <td></td>
+                    </tr>
+                {% elif student.program == 'BS Information Technology' and subject.it == 'yes' %}
+                    <tr>
+                        <td>{{ subject.sub_code }}</td>
+                        <td>{{ subject.sub_name }}</td>
+                        <td>{{ subject.lab_units }}</td>
+                        <td>{{ subject.lec_units }}</td>
+                        <td>{{ subject.prerequisite }}</td>
+                        <td></td>
+                        <td>
+                            <input type="number" 
+                                   step="0.01" 
+                                   min="0" 
+                                   max="5" 
+                                   class="form-control" 
+                                   name="{{ subject.sub_code|cut:" "|lower }}_grade"
+                                   value="{{ checklist|get_grade:subject.sub_code }}"
+                                   {% if not request.user.is_staff %}disabled{% endif %}>
+                        </td>
+                        <td></td>
+                    </tr>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+
+    </tbody>
+</table> -->
