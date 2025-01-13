@@ -605,43 +605,141 @@ def enroll_students_sub(request):
     return render(request, "enroll-students-sub.html", {'subjects': subjects, 'subject_range': range(1, 10)})
 
 
+def check_prerequisites(student_number, subject_code, program):
+    """
+    Check if student has completed prerequisites for a given subject
+    Returns (bool, str) tuple - (prerequisites_met, error_message)
+    """
+    # Get the subject's prerequisites
+    try:
+        subject = AppSub.objects.get(sub_code=subject_code)
+        if not subject.prerequisite:
+            return True, ""  # No prerequisites needed
+            
+        prerequisites = subject.prerequisite.split(',')
+        
+        # Get student's grades based on program
+        if program == 'BS Computer Science':
+            checklist = AppCsChecklist.objects.get(student_number=student_number)
+        else:
+            checklist = AppItChecklist.objects.get(student_number=student_number)
+            
+        # Check each prerequisite
+        for prereq in prerequisites:
+            prereq = prereq.strip()
+            if prereq:
+                # Convert prereq (e.g., "GNED 11") to field name format (e.g., "gned_11")
+                field_name = prereq.lower().replace(' ', '_')
+                
+                # Get the grade for this prerequisite
+                grade = getattr(checklist, field_name, None)
+                
+                if grade is None or grade == 0:
+                    return False, f"Missing grade for prerequisite: {prereq}"
+                    
+                if float(grade) > 3.0:  # Failing grade
+                    return False, f"Failed prerequisite {prereq} (grade: {grade})"
+                    
+        return True, ""
+        
+    except AppSub.DoesNotExist:
+        return False, f"Subject {subject_code} not found"
+    except (AppCsChecklist.DoesNotExist, AppItChecklist.DoesNotExist):
+        return False, "Student grades not found"
+
+
 @login_required
 @user_passes_test(is_superuser)
 @csrf_protect
 @require_http_methods(["POST"])
 def enroll_student(request):
     try:
-        # Parse the incoming JSON data
         data = json.loads(request.body)
         program = data.get('program', '')
         enrollment_data = data.get('enrollment_data', {})
 
-        # Validate input
         student_number = enrollment_data.get('student_number')
-        semester = enrollment_data.get('semester', '')  # New line to get semester
+        semester = enrollment_data.get('semester', '')
+        society_fee = enrollment_data.get('soc_fee', '')
+        section = enrollment_data.get('section', '')
+        
         if not student_number:
             return JsonResponse({
                 'success': False, 
                 'message': 'Invalid student data'
             }, status=400)
 
+        # Get current date and determine appropriate enrollment date
+        current_date = now().date()
+        current_month = current_date.month
+        current_year = current_date.year
+
+        def get_enrollment_date(semester):
+            from datetime import date
+            
+            def get_academic_year():
+                # If current month is after September, we're in the next academic year
+                if current_month > 9:
+                    return current_year + 1
+                # If current month is before February, we're in the previous academic year
+                elif current_month < 2:
+                    return current_year - 1
+                return current_year
+
+            academic_year = get_academic_year()
+            
+            if semester == '1':
+                enrollment_start = date(academic_year, 8, 1)  # August 1st
+                enrollment_end = date(academic_year, 9, 30)   # September 30th
+                
+            else:  # 2nd semester
+                enrollment_start = date(academic_year, 2, 1)  # February 1st
+                enrollment_end = date(academic_year, 3, 31)   # March 31st
+
+            # If current date is before the enrollment period, use start date
+            if current_date < enrollment_start:
+                return enrollment_start
+            # If current date is after the enrollment period, use end date
+            elif current_date > enrollment_end:
+                return enrollment_end
+            # If current date is within the enrollment period, use current date
+            else:
+                return current_date
+
+        # Get appropriate enrollment date
+        enrollment_date = get_enrollment_date(semester)
+
+        # Check if student is first year and in DCS admission
+        def validate_first_year_admission(student_number, program_model):
+            try:
+                student = program_model.objects.get(student_number=student_number)
+                is_first_year = student.year_level == 1 if hasattr(student, 'year_level') else str(student_number).startswith(str(current_year))
+                
+                if is_first_year:
+                    is_admitted = AppDcsAdmission.objects.filter(student_number=student_number).exists()
+                    if not is_admitted:
+                        return False, "First year students must be in DCS admission list to enroll"
+                return True, None
+            except program_model.DoesNotExist:
+                return False, f"Student not found in {program} program"
+
         encoder_name = f"{request.user.first_name} {request.user.last_name}"
         
-        # Determine the appropriate model based on program
         with transaction.atomic():
             if program == 'BS Computer Science':
-                # Find the student
+                is_valid, error_message = validate_first_year_admission(student_number, AppCsStudents)
+                if not is_valid:
+                    return JsonResponse({
+                        'success': False,
+                        'message': error_message
+                    }, status=403)
+
                 try:
                     student = AppCsStudents.objects.get(student_number=student_number)
                     
-                    # Check if student has paid SOC fee
-                    if student.soc_fee != 'paid':
-                        return JsonResponse({
-                            'success': False, 
-                            'message': 'Enrollment failed. Kindly settle your SOC fee first.'
-                        }, status=403)
+                    student.soc_fee = society_fee
+                    student.section = section
                     
-                    # Prepare data for subject enrollment
                     subject_data = {
                         'student_number': student_number,
                         'sub1': enrollment_data.get('sub1', ''),
@@ -654,18 +752,15 @@ def enroll_student(request):
                         'sub8': enrollment_data.get('sub8', ''),
                         'sub9': enrollment_data.get('sub9', ''),
                         'total_units': enrollment_data.get('total_units', 0),
-                        'semester': semester,  # Add semester to the subject data
+                        'semester': semester,
                         'encoder': encoder_name
                     }
                     
-                    # Create new subject enrollment
                     subject_enrollment = AppCsStudentsSub.objects.create(**subject_data)
                     
                     student.is_archived = False
                     student.archived_at = None
-                    
-                    # Update enrollment date
-                    student.date_enrolled = now().date()
+                    student.date_enrolled = enrollment_date
                     student.save()
                 
                 except AppCsStudents.DoesNotExist:
@@ -675,18 +770,19 @@ def enroll_student(request):
                     }, status=404)
             
             elif program == 'BS Information Technology':
-                # Find the student
+                is_valid, error_message = validate_first_year_admission(student_number, AppItStudents)
+                if not is_valid:
+                    return JsonResponse({
+                        'success': False,
+                        'message': error_message
+                    }, status=403)
+
                 try:
                     student = AppItStudents.objects.get(student_number=student_number)
                     
-                    # Check if student has paid SOC fee
-                    if student.soc_fee != 'paid':
-                        return JsonResponse({
-                            'success': False, 
-                            'message': 'Enrollment failed. Kindly settle your SOC fee first.'
-                        }, status=403)
+                    student.soc_fee = society_fee
+                    student.section = section
                     
-                    # Prepare data for subject enrollment
                     subject_data = {
                         'student_number': student_number,
                         'sub1': enrollment_data.get('sub1', ''),
@@ -699,18 +795,15 @@ def enroll_student(request):
                         'sub8': enrollment_data.get('sub8', ''),
                         'sub9': enrollment_data.get('sub9', ''),
                         'total_units': enrollment_data.get('total_units', 0),
-                        'semester': semester,  # Add semester to the subject data
+                        'semester': semester,
                         'encoder': encoder_name
                     }
                     
-                    # Create new subject enrollment
                     subject_enrollment = AppItStudentsSub.objects.create(**subject_data)
                     
                     student.is_archived = False
                     student.archived_at = None
-                    
-                    # Update enrollment date
-                    student.date_enrolled = now().date()
+                    student.date_enrolled = enrollment_date
                     student.save()
                 
                 except AppItStudents.DoesNotExist:
@@ -1092,7 +1185,31 @@ def enrolled(request):
     }
     return render(request, 'enrolled.html', context)
 
-
+@login_required
+@user_passes_test(is_superuser)
+def delete_all_enrolled(request):
+    """
+    Delete all enrolled subjects and reset enrollment dates for all students
+    """
+    if request.method == "POST":
+        try:
+            AppCsStudentsSub.objects.all().delete()
+            AppCsStudents.objects.filter(date_enrolled__isnull=False).update(
+                date_enrolled=None,
+                section=''  # Clear the section
+            )
+            
+            AppItStudentsSub.objects.all().delete()
+            AppItStudents.objects.filter(date_enrolled__isnull=False).update(
+                date_enrolled=None,
+                section=''  # Clear the section
+            )
+            
+            messages.success(request, "Successfully unenrolled all students")
+        except Exception as e:
+            messages.error(request, f"Error unenrolling students: {str(e)}")
+            
+    return redirect('enrolled')
 
 
 
@@ -1644,6 +1761,95 @@ def search_checklist(request):
     }
     
     return render(request, 'search_checklist.html', context)
+
+
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.db import IntegrityError
+from .models import AppDcsAdmission
+
+def admission(request):
+    # Get all existing DCS admissions
+    dcs_admissions_list = AppDcsAdmission.objects.all().order_by('student_number')
+    total_students = dcs_admissions_list.count()
+    
+    # Pagination
+    page = request.GET.get('page', 1)
+    paginator = Paginator(dcs_admissions_list, 10)  # Show 10 records per page
+    
+    try:
+        dcs_admissions = paginator.page(page)
+    except PageNotAnInteger:
+        dcs_admissions = paginator.page(1)
+    except EmptyPage:
+        dcs_admissions = paginator.page(paginator.num_pages)
+    
+    context = {
+        'dcs_admissions': dcs_admissions,
+        'total_students': total_students,
+    }
+    
+    return render(request, 'admission.html', context)
+
+def add_student_admission(request):
+    if request.method == 'POST':
+        student_number = request.POST.get('student_number')
+        
+        try:
+            AppDcsAdmission.objects.create(student_number=student_number)
+            messages.success(request, f'Student {student_number} successfully added.')
+        except IntegrityError:
+            messages.error(request, f'Student {student_number} already exists.')
+        except ValueError:
+            messages.error(request, 'Invalid student number.')
+            
+    return redirect('admission')
+
+def delete_all_admissions(request):
+    if request.method == 'POST':
+        try:
+            count = AppDcsAdmission.objects.all().count()
+            AppDcsAdmission.objects.all().delete()
+            messages.success(request, f'Successfully deleted all {count} DCS admission records.')
+        except Exception as e:
+            messages.error(request, f'Error deleting records: {str(e)}')
+    
+    return redirect('admission')
+
+
+def student_admission(request):
+    # Get search parameter
+    search_query = request.GET.get('search', '')
+    
+    # Filter admissions based on search query
+    dcs_admissions_list = AppDcsAdmission.objects.all()
+    if search_query:
+        dcs_admissions_list = dcs_admissions_list.filter(student_number__icontains=search_query)
+    
+    # Order the results
+    dcs_admissions_list = dcs_admissions_list.order_by('student_number')
+    
+    # Get total count for display
+    total_students = dcs_admissions_list.count()
+    
+    # Pagination
+    page = request.GET.get('page', 1)
+    paginator = Paginator(dcs_admissions_list, 10)  # Show 10 records per page
+    
+    try:
+        dcs_admissions = paginator.page(page)
+    except PageNotAnInteger:
+        dcs_admissions = paginator.page(1)
+    except EmptyPage:
+        dcs_admissions = paginator.page(paginator.num_pages)
+    
+    context = {
+        'dcs_admissions': dcs_admissions,
+        'total_students': total_students,
+    }
+    
+    return render(request, 'student_admission.html', context)
 
 # Add this custom template filter to your templatetags
 # @register.filter

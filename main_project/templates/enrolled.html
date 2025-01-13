@@ -51,6 +51,17 @@
                                         </select>
                                     </form>
                                 </div>
+                                <div class="col-md-8 text-right">
+                                    <form method="post" 
+                                          action="{% url 'delete-all-enrolled' %}"
+                                          style="display:inline;" 
+                                          onsubmit="return confirmDeleteAll();">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger">
+                                            <i class="fas fa-trash"></i> Delete All Enrolled Data
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                             <thead>
                                 <tr>
@@ -133,6 +144,9 @@
         </div>
     </div>
 </section>
-<script
-    type="text/javascript"> function confirmDelete() { return confirm("Are you sure you want to delete this student?"); } </script>
+<script type="text/javascript">
+    function confirmDeleteAll() {
+        return confirm("WARNING: This will unenroll ALL students and delete ALL enrolled subjects. This action cannot be undone. Are you sure you want to proceed?");
+    }
+</script>
 {% endblock %}

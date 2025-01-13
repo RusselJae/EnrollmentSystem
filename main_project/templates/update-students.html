@@ -46,7 +46,7 @@
                                 </div>
                                 <div class="col-md-3 form-group">
                                     <label>Middle Name</label>
-                                    <input class="form-control" name="middle_name" type="text" value="{{ student.middle_name }}">
+                                    <input class="form-control" name="middle_name" type="text" value="{{ student.middle_name|default:'' }}">
                                 </div>
                                 <div class="col-md-3 form-group">
                                     <label>Last Name</label>
@@ -54,7 +54,7 @@
                                 </div>
                                 <div class="col-md-3 form-group">
                                     <label>Suffix</label>
-                                    <input class="form-control" name="suffix" type="text" value="{{ student.suffix }}" placeholder="Jr., Sr., III, etc.">
+                                    <input class="form-control" name="suffix" type="text" value="{{ student.suffix|default:'' }}" placeholder="Jr., Sr., III, etc.">
                                 </div>
                             </div>
 

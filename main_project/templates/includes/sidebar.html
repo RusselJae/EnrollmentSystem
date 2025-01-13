@@ -46,10 +46,19 @@
             <i class="nav-icon fas fa-tachometer-alt"></i>
             <p>
               Dashboard
-
             </p>
           </a>
         </li>
+
+        <li class="nav-item">
+          <a href="{% url 'admission' %}"  class="nav-link {% if request.resolver_match.url_name == 'admission' %}active{% endif %}">
+            <i class="nav-icon fas fa-users"></i>
+            <p>
+              Admission
+            </p>
+          </a>
+        </li>
+
         <li class="nav-item">
           <a href="#" class="nav-link {% if request.resolver_match.url_name == 'add-students' or request.resolver_match.url_name == 'enroll-students-sub' %}active{% endif %}">
             <i class="nav-icon fas fa-copy"></i>
@@ -67,12 +76,6 @@
               </a>
             </li>
             <li class="nav-item">
-              <a href="{% url 'search_checklist' %}" class="nav-link {% if request.resolver_match.url_name == 'search_checklist' %}active{% endif %} ">
-                <i class="far fa-circle nav-icon"></i>
-                <p>Checklist</p>
-              </a>
-            </li>
-            <li class="nav-item">
               <a href="{% url 'enroll-students-sub' %}" class="nav-link {% if request.resolver_match.url_name == 'enroll-students-sub' %}active{% endif %}">
                 <i class="far fa-circle nav-icon"></i>
                 <p>Enroll Subjects</p>
@@ -81,6 +84,23 @@
           
           </ul>
         </li>
+
+        <li class="nav-item">
+          <a href="{% url 'search_checklist' %}" class="nav-link {% if request.resolver_match.url_name == 'search_checklist' %}active{% endif %} ">
+            <i class="nav-icon fas fa-search"></i>
+            <p>Search Checklist</p>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a href="{% url 'search_cor' %}" class="nav-link {% if request.resolver_match.url_name == 'search_cor' %}active{% endif %}">
+            <i class="nav-icon fas fa-search"></i>
+            <p>
+              Search COR
+            </p>
+          </a>
+        </li> 
+
         <li class="nav-item">
           <a href="#" class="nav-link {% if request.resolver_match.url_name == 'enrolled' or request.resolver_match.url_name == 'not-enrolled' %}active{% endif %}">
             <i class="nav-icon fas fa-envelope"></i>
@@ -122,14 +142,6 @@
           </a>
         </li> 
 
-        <li class="nav-item">
-          <a href="{% url 'search_cor' %}" class="nav-link {% if request.resolver_match.url_name == 'search_cor' %}active{% endif %}">
-            <i class="nav-icon fas fa-search"></i>
-            <p>
-              Search COR
-            </p>
-          </a>
-        </li> 
 
         <li class="nav-item">
           <a href="{% url 'archive' %}" class="nav-link {% if request.resolver_match.url_name == 'archive' %}active{% endif %}">

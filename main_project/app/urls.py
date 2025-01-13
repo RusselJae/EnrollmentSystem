@@ -22,6 +22,7 @@ urlpatterns = [
     path('update_student_subject/', views.update_student_subject, name='update_student_subject'),
     path('not-enrolled/', views.not_enrolled, name='not-enrolled'),
     path('enrolled/', views.enrolled, name='enrolled'),
+    path('delete-all-enrolled/', views.delete_all_enrolled, name='delete-all-enrolled'),
     path('admin_dashboard/',views.admin_dashboard,name="admin_dashboard"),
     path('checklist/',views.checklist,name="checklist"),
     path('search_checklist/',views.search_checklist,name="search_checklist"),
@@ -37,6 +38,10 @@ urlpatterns = [
     path('student-profile/', views.student_profile, name='student_profile'),
     path('archive_student/<str:program><int:student_id>/', views.archive_student, name='archive_student'),
     path('restore_student/<str:program><int:student_id>/', views.restore_student, name='restore_student'),
+    path('admission/', views.admission, name='admission'),
+    path('student-admission/', views.student_admission, name='student_admission'),
+    path('add-student-admission/', views.add_student_admission, name='add_student_admission'),
+    path('delete-all-admissions/', views.delete_all_admissions, name='delete_all_admissions'),
     
     path('password-reset/', 
          auth_view.PasswordResetView.as_view(template_name='password_reset.html'), 

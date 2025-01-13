@@ -7,9 +7,9 @@ from django.contrib.auth.models import User
 
 class AppCsStudents(models.Model):
     first_name = models.CharField(max_length=100)
-    middle_name = models.CharField(max_length=100, blank=True, null=True)
+    middle_name = models.CharField(max_length=100, blank=True, null=True, default='')
     last_name = models.CharField(max_length=100)
-    suffix = models.CharField(max_length=10, blank=True, null=True)
+    suffix = models.CharField(max_length=10, blank=True, null=True, default='')
     
     birthdate = models.DateField()
     age = models.IntegerField()
@@ -76,6 +76,13 @@ class AppCsStudents(models.Model):
     
     is_archived = models.BooleanField(default=False)
     archived_at = models.DateTimeField(null=True, blank=True)
+    
+    def get_full_name(self):
+        """
+        Returns the full name of the student, excluding None or blank fields.
+        """
+        parts = [self.first_name, self.middle_name, self.last_name, self.suffix]
+        return " ".join(filter(None, parts))
 
     def clean(self):
         """
@@ -114,16 +121,16 @@ class AppCsStudents(models.Model):
         managed = True  # If this is an existing table
         db_table = 'app_cs_students'
         verbose_name = 'CS Student'
-        verbose_name_plural = 'CS Students'
+        verbose_name_plural = 'CS Students' 
         
     def __str__(self):
         return f"{self.first_name} {self.last_name} (CS - {self.student_number})"
 
 class AppItStudents(models.Model):
     first_name = models.CharField(max_length=100)
-    middle_name = models.CharField(max_length=100, blank=True, null=True)
+    middle_name = models.CharField(max_length=100, blank=True, null=True, default='')
     last_name = models.CharField(max_length=100)
-    suffix = models.CharField(max_length=10, blank=True, null=True)
+    suffix = models.CharField(max_length=10, blank=True, null=True, default='')
     
     birthdate = models.DateField()
     age = models.IntegerField()
@@ -191,6 +198,13 @@ class AppItStudents(models.Model):
 
     is_archived = models.BooleanField(default=False)
     archived_at = models.DateTimeField(null=True, blank=True)
+    
+    def get_full_name(self):
+        """
+        Returns the full name of the student, excluding None or blank fields.
+        """
+        parts = [self.first_name, self.middle_name, self.last_name, self.suffix]
+        return " ".join(filter(None, parts))
 
     def clean(self):
         """
@@ -414,3 +428,10 @@ class AppItChecklist(models.Model):
     class Meta:
         managed = False
         db_table = 'app_it_checklist'
+
+class AppDcsAdmission(models.Model):
+    student_number = models.IntegerField(unique=True)
+
+    class Meta:
+        managed = False
+        db_table = 'app_dcs_admission'

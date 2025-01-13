@@ -1,0 +1,126 @@
+{% extends 'base4.html' %}
+{% load custom_filters %}
+{% block content %}
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Manage DCS Admissions</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Home</a></li>
+                    <li class="breadcrumb-item active">Manage DCS Admissions</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Messages -->
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <!-- New Student Addition Form -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header" style="background-color: #165319;">
+                        <h3 class="card-title text-white">Add New Student</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{% url 'add_student_admission' %}" class="form-inline" {% if not request.user.is_staff %}disabled{% endif %}>
+                            {% csrf_token %}
+                            <div class="form-group mx-2">
+                                <label for="student_number" class="mr-2">Student Number:</label>
+                                <input type="text" class="form-control" id="student_number" name="student_number" required>
+                            </div>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-plus"></i> Add Student
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DCS Admission Students Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header" style="background-color: #165319;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h3 class="card-title text-white">DCS Admission Students (Total: {{ total_students }})</h3>
+                            <form method="post" action="{% url 'delete_all_admissions' %}" style="display:inline;" 
+                                  onsubmit="return confirm('WARNING: This will delete ALL DCS admission records. This action cannot be undone. Are you sure you want to proceed?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger" {% if not request.user.is_staff %}disabled{% endif %}>
+                                    <i class="fas fa-trash"></i> Delete All Records
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>S.NO</th>
+                                    <th>Student Number</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for admission in dcs_admissions %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ admission.student_number }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                         <!-- Pagination -->
+                         {% if dcs_admissions.paginator.num_pages > 1 %}
+                         <div class="mt-4">
+                             <ul class="pagination justify-content-center">
+                                 {% if dcs_admissions.has_previous %}
+                                     <li class="page-item">
+                                         <a class="page-link" href="?page=1">&laquo; First</a>
+                                     </li>
+                                     <li class="page-item">
+                                         <a class="page-link" href="?page={{ dcs_admissions.previous_page_number }}">Previous</a>
+                                     </li>
+                                 {% endif %}
+ 
+                                 <li class="page-item disabled">
+                                     <span class="page-link">
+                                         Page {{ dcs_admissions.number }} of {{ dcs_admissions.paginator.num_pages }}
+                                     </span>
+                                 </li>
+ 
+                                 {% if dcs_admissions.has_next %}
+                                     <li class="page-item">
+                                         <a class="page-link" href="?page={{ dcs_admissions.next_page_number }}">Next</a>
+                                     </li>
+                                     <li class="page-item">
+                                         <a class="page-link" href="?page={{ dcs_admissions.paginator.num_pages }}">Last &raquo;</a>
+                                     </li>
+                                 {% endif %}
+                             </ul>
+                         </div>
+                         {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

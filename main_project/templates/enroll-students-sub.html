@@ -23,6 +23,7 @@
                 <h3 class="card-title" id="semesterTitle">Subject Input</h3>
             </div>
             <form role="form" id="enrollmentForm">
+                {% csrf_token %}
                 <div class="card-body">
                     <div class="form-group row">
                         <div class="col-sm-3">
@@ -101,6 +102,23 @@
                         <div class="col-sm-3">
                             <label for="totalLabUnits">Total Lab Units</label>
                             <input type="text" class="form-control" id="totalLabUnits" readonly>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-md-6 form-group">
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label for="sectionInput">Section</label>
+                            <input class="form-control" name="section" type="text" id="sectionInput" value="{{ form_data.section|default:'' }}">
+                            <div id="section-note" class="field-note"></div>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label for="societyFeeSelect">Society Fee</label>
+                            <select class="form-control" name="soc_fee" id="societyFeeSelect" required>
+                                <option value="">Select Fee Status</option>
+                                <option value="paid" {% if form_data.soc_fee == 'paid' %}selected{% endif %}>Paid</option>
+                                <option value="not paid" {% if form_data.soc_fee == 'not paid' %}selected{% endif %}>Not Paid</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -220,7 +238,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // Get student input details
     const studentId = document.getElementById('studentInput').value;
     const totalUnits = parseInt(totalLecUnits.value) + parseInt(totalLabUnits.value);
+    const societyFee = document.getElementById('societyFeeSelect').value;
     const semesterSelect = document.getElementById('semesterSelect');
+    const section = document.getElementById('sectionInput').value;
     const semester = semesterSelect ? semesterSelect.value : '';
 
     // Prepare subjects data
@@ -232,10 +252,17 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+        // Check if at least one subject is selected
+    if (subjects.length === 0) {
+        alert('Please select at least one subject');
+        return;
+    }
+
     // Determine the route based on the program
     const programSelect = document.getElementById('programSelect');
     const program = programSelect ? programSelect.value : '';
 
+    
     // Prepare data for submission
     const formData = {
         student_number: studentId,
@@ -249,8 +276,12 @@ document.addEventListener('DOMContentLoaded', function () {
         sub8: subjects[7] || '',
         sub9: subjects[8] || '',
         total_units: totalUnits,
-        semester: semester  // Add semester to the form data
+        semester: semester, // Add semester to the form data
+        soc_fee: societyFee,
+        section: section
     };
+
+    const csrftoken = getCookie('csrftoken');
 
     // Submit to appropriate endpoint based on program
     fetch('/enroll_student/', {

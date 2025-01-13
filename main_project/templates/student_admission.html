@@ -1,0 +1,141 @@
+<style>
+    h1 {
+        font-size: 30px !important;
+        font-family: 'Lora', serif !important;
+    }
+
+    p,
+    p strong {
+        font-size: 13px !important;
+    }
+
+    h2 {
+        font-size: 20px !important;
+    }
+
+    h3 {
+        font-size: 18px !important;
+    }
+
+    table td {
+        font-size: 11px !important;
+    }
+
+    table th {
+        font-size: 15px !important;
+    }
+</style>
+
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/main.css' %}">
+<div class="container my-5" id="cor">
+    {% if error_message %}
+    <p>{{ error_message }}</p>
+    {% endif %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header text-black" style="background-color: #89ff71; color: #000;">
+            <h3 class="text-center mb-0">Admission</h3>
+        </div>
+        <div class="card-body">
+            <h1 class="text-center mb-2" style="position: relative; left: -3%;">
+                <img src="{% static 'images/logo.svg' %}" alt="" style="width: 80px; height: auto; position: relative;">
+                Cavite State University
+                <h3 class="text-center" style="font-size: 15px; position: relative; top: -30px;">Bacoor City Campus</h3>
+            </h1>
+            <h4 class="text-center" style="color: #000;">Students that passed the Entrance Exam</h4>
+
+            <!-- DCS Admission Students Table -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header" style="background-color: #165319;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <h3 class="card-title text-white mb-0 me-3"></h3>
+                                    <form method="get" class="d-flex align-items-center">
+                                        <input type="text" name="search" class="form-control form-control-sm me-2"
+                                            placeholder="Search student number" value="{{ request.GET.search }}">
+                                        <button type="submit" class="btn btn-success btn-sm">Search</button>
+                                        {% if request.GET.search %}
+                                        <a href="{% url 'student_admission' %}"
+                                            class="btn btn-warning btn-sm ms-2">Clear</a>
+                                        {% endif %}
+                                    </form>
+                                </div>
+                                <form method="post" action="{% url 'delete_all_admissions' %}" style="display:inline;"
+                                    onsubmit="return confirm('WARNING: This will delete ALL DCS admission records. This action cannot be undone. Are you sure you want to proceed?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger" {% if not request.user.is_staff%}hidden{% endif %}>
+                                        <i class="fas fa-trash"></i> Delete All Records
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            {% if dcs_admissions %}
+                            <table class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>S.NO</th>
+                                        <th>Student Number</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for admission in dcs_admissions %}
+                                    <tr>
+                                        <td>{{ forloop.counter|add:dcs_admissions.start_index|add:"-1" }}</td>
+                                        <td>{{ admission.student_number }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% else %}
+                            <div class="alert alert-info">No records found.</div>
+                            {% endif %}
+
+                            <!-- Pagination -->
+                            {% if dcs_admissions.paginator.num_pages > 1 %}
+                            <div class="mt-4">
+                                <ul class="pagination justify-content-center">
+                                    {% if dcs_admissions.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                            href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}page=1">&laquo;
+                                            First</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                            href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}page={{ dcs_admissions.previous_page_number }}">Previous</a>
+                                    </li>
+                                    {% endif %}
+
+                                    <li class="page-item disabled">
+                                        <span class="page-link">
+                                            Page {{ dcs_admissions.number }} of {{ dcs_admissions.paginator.num_pages }}
+                                        </span>
+                                    </li>
+
+                                    {% if dcs_admissions.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                            href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}page={{ dcs_admissions.next_page_number }}">Next</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                            href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}page={{ dcs_admissions.paginator.num_pages }}">Last
+                                            &raquo;</a>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
