@@ -9,7 +9,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
 from .forms import UserRegisterForm
 from django.contrib.auth.models import User
-from django.contrib.messages import get_messages
 from django.contrib.auth.hashers import make_password
 from unittest.mock import patch
 from .models import AppCsStudents, AppItStudents,AppCsStudentsSub,AppItStudentsSub,AppSub
@@ -18,19 +17,9 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.contrib.auth import get_user_model
 from django.test import override_settings
-
-
-# Create your tests here.
-class BasicTests(TestCase):
-    def test_1(self):
-        self.assertTrue(1==1)
-        # self.assertFalse(1==2)
-        
-    def test_2(self):
-        try:
-            print("Hello!")
-        except Exception as e:
-            self.fail(e)
+from django.urls import reverse
+from django.db.models import Q
+from itertools import chain
 
 
 
@@ -115,28 +104,6 @@ class CustomLoginViewTest(TestCase):
         # Clean up created users
         User.objects.all().delete()
 
-    # def test_already_logged_in_user(self):
-    #     """Test that already logged in users are redirected appropriately"""
-    #     # First log in as regular user
-    #     self.client.login(username='testuser', password='testpass123')
-        
-    #     # Try accessing login page again
-    #     response = self.client.get(self.login_url)
-    #     # Now we expect a 302 redirect status
-    #     self.assertRedirects(response, self.home_url, status_code=302, target_status_code=200)
-
-    # def test_already_logged_in_superuser(self):
-    #     """Test that already logged in superusers are redirected appropriately"""
-    #     # First log in as superuser
-    #     self.client.login(username='admin', password='adminpass123')
-        
-    #     # Try accessing login page again
-    #     response = self.client.get(self.login_url)
-    #     # Expect redirect to admin dashboard
-    #     self.assertRedirects(response, self.admin_dashboard_url, status_code=302, target_status_code=200)
-
-
-        
 
 class RegisterViewTests(TestCase):
     def setUp(self):
@@ -780,78 +747,6 @@ class AddStudentsViewTests(TestCase):
             'address': '123 Test Street'
         }
 
-    # def test_generate_student_number_first_student(self):
-    #     """Test student number generation for the first student of the year"""
-    #     current_year = timezone.now().year
-        
-    #     # Modify data for first year student
-    #     first_student_data = self.base_student_data.copy()
-    #     first_student_data.update({
-    #         'year_level': '1',
-    #         'email': 'first.student@test.com',
-    #         'mobile_number': '09123456001',
-    #         'section': ''  # First year students don't need section
-    #     })
-        
-    #     response = self.client.post(reverse('add-students'), first_student_data)
-    #     messages = list(get_messages(response.wsgi_request))
-        
-    #     # Print messages for debugging
-    #     for message in messages:
-    #         print(f"Message: {message}")
-            
-    #     # Verify student creation
-    #     new_student = AppCsStudents.objects.filter(email='first.student@test.com').first()
-    #     self.assertIsNotNone(new_student, "Student was not created successfully")
-    #     self.assertTrue(new_student.student_number.startswith(str(current_year)))
-    #     self.assertEqual(len(new_student.student_number), 9)  # YYYY00001 format
-
-    # def test_generate_student_number_sequential(self):
-    #     """Test sequential student number generation"""
-    #     current_year = timezone.now().year
-        
-    #     # Create first student with year 1
-    #     first_student_data = self.base_student_data.copy()
-    #     first_student_data.update({
-    #         'year_level': '1',
-    #         'email': 'student1@test.com',
-    #         'mobile_number': '09123456781',
-    #         'section': ''  # First year students don't need section
-    #     })
-    #     response1 = self.client.post(reverse('add-students'), first_student_data)
-        
-    #     # Create second student with year 1
-    #     second_student_data = self.base_student_data.copy()
-    #     second_student_data.update({
-    #         'year_level': '1',
-    #         'email': 'student2@test.com',
-    #         'mobile_number': '09123456782',
-    #         'section': ''  # First year students don't need section
-    #     })
-    #     response2 = self.client.post(reverse('add-students'), second_student_data)
-
-    #     # Get all students and verify
-    #     students = AppCsStudents.objects.order_by('student_number').all()
-    #     self.assertEqual(students.count(), 2, "Expected 2 students to be created")
-        
-    #     # Get the numeric parts of the student numbers
-    #     first_number = int(students[0].student_number[-5:])
-    #     second_number = int(students[1].student_number[-5:])
-        
-    #     # Verify sequential generation
-    #     self.assertEqual(second_number, first_number + 1)
-    
-        # def test_transferee_student_number_generation(self):
-    #     """Test that transferee students get new student numbers"""
-    #     response = self.client.post(reverse('add-students'), {
-    #         **self.base_student_data,
-    #         'status': 'transferee',
-    #         'year_level': '3'  # Higher year level
-    #     })
-
-    #     student = AppCsStudents.objects.first()
-    #     self.assertTrue(student.student_number.startswith(str(timezone.now().year)))
-    #     self.assertIsNone(student.section)
 
     def test_section_capacity_limit(self):
         """Test that sections cannot exceed 30 regular students"""
@@ -943,13 +838,6 @@ class AddStudentsViewTests(TestCase):
         response = self.client.get(reverse('add-students'))
         self.assertEqual(response.status_code, 302)  # Should redirect to login
         
-from django.test import TestCase, Client
-from django.urls import reverse
-from django.contrib.auth.models import User
-from django.utils import timezone
-from django.db.models import Q
-from itertools import chain
-from .models import AppCsStudents, AppItStudents
 
 class ManageStudentsViewTests(TestCase):
     def setUp(self):
@@ -2006,11 +1894,6 @@ class SectionsViewTest(TestCase):
             address="Test Address"
         )
 
-    # def test_login_required(self):
-    #     """Test that the view requires login"""
-    #     response = self.client.get(reverse('sections'))
-    #     self.assertEqual(response.status_code, 302)  # Should redirect to login
-    #     self.assertTrue(response.url.startswith('/login'))
 
     def test_superuser_required(self):
         """Test that the view requires superuser status"""
